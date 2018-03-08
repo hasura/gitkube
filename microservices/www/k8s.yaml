@@ -3,18 +3,14 @@ items:
 - apiVersion: extensions/v1beta1
   kind: Deployment
   metadata:
-    creationTimestamp: null
     labels:
       app: www
-      hasuraService: custom
     name: www
-    namespace: 
+    namespace: default
   spec:
     replicas: 1
-    strategy: {}
     template:
       metadata:
-        creationTimestamp: null
         labels:
           app: www
       spec:
@@ -25,17 +21,11 @@ items:
           ports:
           - containerPort: 8080
             protocol: TCP
-          resources: {}
-        securityContext: {}
-        terminationGracePeriodSeconds: 0
-  status: {}
 - apiVersion: v1
   kind: Service
   metadata:
-    creationTimestamp: null
     labels:
       app: www
-      hasuraService: custom
     name: www
     namespace: default
   spec:
@@ -46,7 +36,5 @@ items:
     selector:
       app: www
     type: ClusterIP
-  status:
-    loadBalancer: {}
 kind: List
 metadata: {}

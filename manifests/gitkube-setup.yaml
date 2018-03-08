@@ -44,7 +44,7 @@ spec:
         env:
         - name: SSHD_CONF_HASH
           value: "53083762"
-        image: hasuraci/sshd:371e61e
+        image: hasura/gitkube-sshd:v0.1
         imagePullPolicy: IfNotPresent
         name: sshd
         ports:

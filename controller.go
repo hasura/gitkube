@@ -17,11 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
-
-	"encoding/json"
 
 	l "github.com/sirupsen/logrus"
 	// appsv1 "k8s.io/api/apps/v1"
@@ -30,7 +29,7 @@ import (
 	// "k8s.io/apimachinery/pkg/runtime/schema"
 	// appsv1beta2 "k8s.io/api/apps/v1beta2"
 	// metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	// labels "k8s.io/apimachinery/pkg/labels"
+	labels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kubeinformers "k8s.io/client-go/informers"
@@ -190,17 +189,13 @@ func (c *GitController) syncHandler(key string) error {
 	}
 
 	ciconf.Data = make(map[string]string)
-	ciconf.Data["authorized-keys"] = strings.Join(remote.Spec.AuthorizedKeys, "\n")
-	ciconf.Data["registry.json"] = ""
-	ciconf.Data["remotes.json"] = ConvertDeploymentsToString(remote)
+	ciconf.Data["remotes.json"] = CreateGitkubeConf(c.remoteLister)
 
 	l.Infof("%#v", ciconf)
 
 	_, err = c.kubeclientset.CoreV1().ConfigMaps(gitkubeNamespace).Update(ciconf)
 
 	gitkubedeployment, err := c.kubeclientset.AppsV1beta1().Deployments(gitkubeNamespace).Get(gitkubeDeploymentName, metav1.GetOptions{})
-
-	l.Infof("%#v", gitkubedeployment)
 
 	timeannotation := fmt.Sprintf("%v", time.Now().Unix())
 
@@ -214,34 +209,48 @@ func (c *GitController) syncHandler(key string) error {
 	return nil
 }
 
-func ConvertDeploymentsToString(remote *v1alpha1.Remote) string {
-	remoteName := remote.Name
-	namespace := remote.Namespace
-
-	deploymentMap := make(map[string]interface{})
-
-	for _, deployment := range remote.Spec.Deployments {
-		deploymentTag := fmt.Sprintf("%s.%s", namespace, deployment.Name)
-		containerMap := make(map[string]interface{})
-		for _, container := range deployment.Containers {
-			containerMap[container.Name] = map[string]interface{}{
-				"path":       container.Path,
-				"dockerfile": container.Dockerfile,
-			}
-		}
-		deploymentMap[deploymentTag] = containerMap
+func CreateGitkubeConf(remotelister listers.RemoteLister) string {
+	remotes, err := remotelister.List(labels.Everything())
+	if err != nil {
+		//handle error
 	}
 
-	registryMap := map[string]interface{}{
-		remoteName: deploymentMap,
+	remotesMap := make(map[string]interface{})
+	for _, remote := range remotes {
+		qualifiedRemoteName := fmt.Sprintf("%s-%s", remote.Namespace, remote.Name)
+		remotesMap[qualifiedRemoteName] = CreateRemoteJson(remote)
 	}
 
-	bytes, err := json.Marshal(registryMap)
+	bytes, err := json.Marshal(remotesMap)
 	if err != nil {
 		l.Error(err.Error())
 		return ""
 	}
 
 	return string(bytes)
+
+}
+
+func CreateRemoteJson(remote *v1alpha1.Remote) interface{} {
+	remoteMap := make(map[string]interface{})
+	deploymentsMap := make(map[string]interface{})
+
+	for _, deployment := range remote.Spec.Deployments {
+		deploymentTag := fmt.Sprintf("%s.%s", remote.Namespace, deployment.Name)
+		containersMap := make(map[string]interface{})
+		for _, container := range deployment.Containers {
+			containersMap[container.Name] = map[string]interface{}{
+				"path":       container.Path,
+				"dockerfile": container.Dockerfile,
+			}
+		}
+		deploymentsMap[deploymentTag] = containersMap
+	}
+
+	remoteMap["authorized-keys"] = strings.Join(remote.Spec.AuthorizedKeys, "\n")
+	remoteMap["registry"] = ""
+	remoteMap["deployments"] = deploymentsMap
+
+	return remoteMap
 
 }
