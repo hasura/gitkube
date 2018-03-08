@@ -1,0 +1,25 @@
+apiVersion: gitkube.sh/v1alpha1
+kind: Remote
+metadata:
+  name: hasura
+  namespace: default
+spec:
+  authorizedKeys:
+  - "ssh-rsa key"
+  registry:
+    server: "registry.hasura.io"
+    prefix: "user"
+    username: "user"
+    password: "password"
+    email: "username@hasura.io"
+# change to apps
+  deployments:
+  - name: www
+    containers: 
+    - name: www
+      path: microservices/www
+      dockerfile: microservices/www/Dockerfile
+status:
+  remoteUrl: ""
+
+ 

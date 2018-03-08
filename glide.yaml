@@ -1,0 +1,30 @@
+package: github.com/hasura/gitkube
+ignore:
+- github.com/hasura/gitkube
+import:
+- package: github.com/golang/glog
+- package: k8s.io/api
+  subpackages:
+  - apps/v1
+  - core/v1
+- package: k8s.io/apimachinery
+  subpackages:
+  - pkg/api/errors
+  - pkg/apis/meta/v1
+  - pkg/runtime/schema
+  - pkg/util/runtime
+  - pkg/util/wait
+- package: k8s.io/client-go
+  version: ^5.0.0
+  subpackages:
+  - informers
+  - kubernetes
+  - kubernetes/scheme
+  - kubernetes/typed/core/v1
+  - listers/apps/v1beta1
+  - tools/cache
+  - tools/clientcmd
+  - tools/record
+  - util/workqueue
+- package: k8s.io/code-generator
+  version: kubernetes-1.8.7

@@ -1,0 +1,52 @@
+apiVersion: v1
+items:
+- apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: www
+      hasuraService: custom
+    name: www
+    namespace: 
+  spec:
+    replicas: 1
+    strategy: {}
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: www
+      spec:
+        containers:
+        - image: hasura/hello-world:latest
+          imagePullPolicy: IfNotPresent
+          name: www
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+        securityContext: {}
+        terminationGracePeriodSeconds: 0
+  status: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: www
+      hasuraService: custom
+    name: www
+    namespace: default
+  spec:
+    ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: www
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata: {}

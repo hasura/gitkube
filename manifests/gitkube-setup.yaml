@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gitkube
+  namespace: kube-system
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: gitkube
+subjects:
+- kind: ServiceAccount
+  name: gitkube
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: gitkube
+  name: gitkube
+  namespace: kube-system
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: gitkube
+    spec:
+      serviceAccountName: gitkube
+      containers:
+      - command:
+        - bash
+        - /sshd-lib/start_sshd.sh
+        env:
+        - name: SSHD_CONF_HASH
+          value: "53083762"
+        image: hasuraci/sshd:371e61e
+        imagePullPolicy: IfNotPresent
+        name: sshd
+        ports:
+        - containerPort: 22
+          protocol: TCP
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          tcpSocket:
+            port: 22
+        resources:
+          limits:
+            cpu: 200m
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 500Mi
+        volumeMounts:
+        - mountPath: /var/run/docker.sock
+          name: docker-sock
+        - mountPath: /hasura-data/group
+          name: host-group
+          readOnly: true
+        - mountPath: /sshd-conf
+          name: gitkube-ci-conf
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - hostPath:
+          path: /var/run/docker.sock
+        name: docker-sock
+      - hostPath:
+          path: /etc/group
+        name: host-group
+      - configMap:
+          defaultMode: 420
+          name: gitkube-ci-conf
+        name: gitkube-ci-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitkube
+  namespace: kube-system
+spec:
+  ports:
+  - port: 22
+    protocol: TCP
+    targetPort: 22
+  selector:
+    app: gitkube
+  sessionAffinity: None
+  type: LoadBalancer
+
