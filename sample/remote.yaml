@@ -17,8 +17,8 @@ spec:
   - name: www
     containers: 
     - name: www
-      path: microservices/www
-      dockerfile: microservices/www/Dockerfile
+      path: sample/www
+      dockerfile: sample/www/Dockerfile
 status:
   remoteUrl: ""
 
