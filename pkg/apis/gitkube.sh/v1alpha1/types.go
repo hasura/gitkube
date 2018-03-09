@@ -23,7 +23,8 @@ type RemoteSpec struct {
 }
 
 type RemoteStatus struct {
-	RemoteUrl string `json:"remoteUrl"`
+	RemoteUrl     string `json:"remoteUrl"`
+	RemoteUrlDesc string `json:"remoteUrlDesc"`
 }
 
 type RegistrySpec struct {
