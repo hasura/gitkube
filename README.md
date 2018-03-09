@@ -21,7 +21,7 @@ $ kubectl get pods -n kube-system | grep gitkube
 
 * Create a Remote
 ```sh
-$ kubectl create -f manifests/remote.yaml
+$ kubectl create -f sample/remote.yaml
 ```
 
 * Fetch the remote Url from the 'status' spec of the Remote

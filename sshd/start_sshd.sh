@@ -9,8 +9,11 @@ if [ -z "${GROUP_WITH_HOST_GROUP_ID}" ]; then
     GROUP_WITH_HOST_GROUP_ID="docker"
 fi
 
-GIT_REMOTES_CONF="$(cat /sshd-conf/remotes.json)"
+if [ -f /sshd-conf/remotes.json ]; then
+    GIT_REMOTES_CONF="$(cat /sshd-conf/remotes.json)"
+fi
 echo $GIT_REMOTES_CONF
+
 if [ "$GIT_REMOTES_CONF" != "null" ]; then
 
     echo "Setting up git remotes"

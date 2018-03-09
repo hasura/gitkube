@@ -17,12 +17,18 @@ roleRef:
   name: cluster-admin
   apiGroup: rbac.authorization.k8s.io
 ---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: gitkube-ci-conf
+  namespace: kube-system
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: gitkube
-  name: gitkube
+    app: gitkubed
+  name: gitkubed
   namespace: kube-system
 spec:
   replicas: 1
@@ -34,17 +40,14 @@ spec:
   template:
     metadata:
       labels:
-        app: gitkube
+        app: gitkubed
     spec:
       serviceAccountName: gitkube
       containers:
       - command:
         - bash
         - /sshd-lib/start_sshd.sh
-        env:
-        - name: SSHD_CONF_HASH
-          value: "53083762"
-        image: hasura/gitkube-sshd:v0.1
+        image: hasura/gitkubed:v0.1
         imagePullPolicy: IfNotPresent
         name: sshd
         ports:
@@ -86,7 +89,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: gitkube
+  name: gitkubed
   namespace: kube-system
 spec:
   ports:
@@ -94,7 +97,7 @@ spec:
     protocol: TCP
     targetPort: 22
   selector:
-    app: gitkube
+    app: gitkubed
   sessionAffinity: None
   type: LoadBalancer
 

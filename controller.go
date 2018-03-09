@@ -47,7 +47,7 @@ import (
 )
 
 const (
-	gitkubeDeploymentName = "gitkube"
+	gitkubeDeploymentName = "gitkubed"
 	gitkubeConfigMapName  = "gitkube-ci-conf"
 	gitkubeNamespace      = "kube-system"
 )
@@ -93,6 +93,9 @@ func NewController(
 			}
 
 			controller.enqueue(new)
+		},
+		DeleteFunc: func(obj interface{}) {
+			controller.enqueue(obj)
 		},
 	})
 	return controller
@@ -173,14 +176,11 @@ func (c *GitController) processNextWorkItem() bool {
 
 func (c *GitController) syncHandler(key string) error {
 	ns, name, err := cache.SplitMetaNamespaceKey(key)
+	l.Infof("syncing remote: %s.%s", ns, name)
 	if err != nil {
 		runtime.HandleError(fmt.Errorf("invalid resource key: %s", key))
 		return nil
 	}
-
-	remote, err := c.remoteLister.Remotes(ns).Get(name)
-
-	l.Infof("%#v", remote)
 
 	ciconf, err := c.kubeclientset.CoreV1().ConfigMaps(gitkubeNamespace).Get(gitkubeConfigMapName, metav1.GetOptions{})
 	if err != nil {
@@ -190,8 +190,6 @@ func (c *GitController) syncHandler(key string) error {
 
 	ciconf.Data = make(map[string]string)
 	ciconf.Data["remotes.json"] = CreateGitkubeConf(c.remoteLister)
-
-	l.Infof("%#v", ciconf)
 
 	_, err = c.kubeclientset.CoreV1().ConfigMaps(gitkubeNamespace).Update(ciconf)
 
@@ -205,6 +203,10 @@ func (c *GitController) syncHandler(key string) error {
 
 	gitkubedeployment.Spec.Template.ObjectMeta.Annotations["gitkube/lasteventtimestamp"] = timeannotation
 	_, err = c.kubeclientset.AppsV1beta1().Deployments(gitkubeNamespace).Update(gitkubedeployment)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
