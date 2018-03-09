@@ -23,7 +23,7 @@ import (
 	"time"
 
 	l "github.com/sirupsen/logrus"
-	// appsv1 "k8s.io/api/apps/v1"
+	// corev1 "k8s.io/api/core/v1"
 	// kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	// "k8s.io/apimachinery/pkg/runtime/schema"
@@ -37,6 +37,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
+	util "github.com/hasura/gitkube/util"
+
 	v1alpha1 "github.com/hasura/gitkube/pkg/apis/gitkube.sh/v1alpha1"
 
 	clientset "github.com/hasura/gitkube/pkg/client/clientset/versioned"
@@ -48,6 +50,7 @@ import (
 
 const (
 	gitkubeDeploymentName = "gitkubed"
+	gitkubeServiceName    = "gitkubed"
 	gitkubeConfigMapName  = "gitkube-ci-conf"
 	gitkubeNamespace      = "kube-system"
 )
@@ -182,6 +185,12 @@ func (c *GitController) syncHandler(key string) error {
 		return nil
 	}
 
+	remote, err := c.remoteLister.Remotes(ns).Get(name)
+
+	if err != nil {
+		return err
+	}
+
 	ciconf, err := c.kubeclientset.CoreV1().ConfigMaps(gitkubeNamespace).Get(gitkubeConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		//create config map
@@ -203,6 +212,27 @@ func (c *GitController) syncHandler(key string) error {
 
 	gitkubedeployment.Spec.Template.ObjectMeta.Annotations["gitkube/lasteventtimestamp"] = timeannotation
 	_, err = c.kubeclientset.AppsV1beta1().Deployments(gitkubeNamespace).Update(gitkubedeployment)
+
+	if err != nil {
+		return err
+	}
+
+	gitkubeservice, err := c.kubeclientset.CoreV1().Services(gitkubeNamespace).Get(gitkubeServiceName, metav1.GetOptions{})
+
+	extserviceIP, err := util.GetExternalIP(c.kubeclientset, gitkubeservice)
+
+	remoteCopy := remote.DeepCopy()
+
+	if err != nil {
+		remoteCopy.Status.RemoteUrl = ""
+		remoteCopy.Status.RemoteUrlDesc = err.Error()
+	} else {
+		qualifiedRemoteName := fmt.Sprintf("%s-%s", ns, name)
+		remoteCopy.Status.RemoteUrl = fmt.Sprintf("ssh://%s@%s/~/git/%s", qualifiedRemoteName, extserviceIP, qualifiedRemoteName)
+		remoteCopy.Status.RemoteUrlDesc = ""
+	}
+
+	_, err = c.remotesGetter.Remotes(ns).Update(remoteCopy)
 
 	if err != nil {
 		return err
