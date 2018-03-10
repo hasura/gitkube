@@ -67,7 +67,7 @@ func main() {
 	go kubeInformerFactory.Start(stopCh)
 	go gkInformerFactory.Start(stopCh)
 
-	if err = controller.Run(2, stopCh); err != nil {
+	if err = controller.Run(stopCh); err != nil {
 		log.Fatalf("Error running controller: %s", err.Error())
 	}
 }
