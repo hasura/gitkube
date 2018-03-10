@@ -29,6 +29,7 @@ import (
 
 	clientset "github.com/hasura/gitkube/pkg/client/clientset/versioned"
 	informers "github.com/hasura/gitkube/pkg/client/informers/externalversions"
+	controller "github.com/hasura/gitkube/pkg/controller"
 	"github.com/hasura/gitkube/pkg/signals"
 )
 
@@ -61,7 +62,7 @@ func main() {
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClient, time.Second*30)
 	gkInformerFactory := informers.NewSharedInformerFactory(gkClient, time.Second*30)
 
-	controller := NewController(kubeClient, gkClient, kubeInformerFactory, gkInformerFactory)
+	controller := controller.NewController(kubeClient, gkClient, kubeInformerFactory, gkInformerFactory)
 
 	go kubeInformerFactory.Start(stopCh)
 	go gkInformerFactory.Start(stopCh)
