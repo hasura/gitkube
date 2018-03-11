@@ -29,13 +29,9 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
-	appsv1beta1 "k8s.io/api/apps/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-
-	listerappsv1beta1 "k8s.io/client-go/listers/apps/v1beta1"
 	listercorev1 "k8s.io/client-go/listers/core/v1"
 
-	v1alpha1 "github.com/hasura/gitkube/pkg/apis/gitkube.sh/v1alpha1"
 	clientset "github.com/hasura/gitkube/pkg/client/clientset/versioned"
 	typed "github.com/hasura/gitkube/pkg/client/clientset/versioned/typed/gitkube/v1alpha1"
 	informers "github.com/hasura/gitkube/pkg/client/informers/externalversions"
@@ -52,19 +48,15 @@ const (
 type GitController struct {
 	kubeclientset *kubernetes.Clientset
 
-	servicesLister listercorev1.ServiceLister
-	servicesSynced cache.InformerSynced
-
-	deploymentsLister listerappsv1beta1.DeploymentLister
-	deploymentsSynced cache.InformerSynced
+	configmapsLister listercorev1.ConfigMapLister
+	configmapsSynced cache.InformerSynced
 
 	remotesGetter typed.RemotesGetter
 	remotesLister listers.RemoteLister
 	remotesSynced cache.InformerSynced
 
-	remoteworkqueue     workqueue.RateLimitingInterface
-	deploymentworkqueue workqueue.RateLimitingInterface
-	serviceworkqueue    workqueue.RateLimitingInterface
+	remoteworkqueue    workqueue.RateLimitingInterface
+	configmapworkqueue workqueue.RateLimitingInterface
 }
 
 func NewController(
@@ -73,98 +65,56 @@ func NewController(
 	kubeInformerFactory kubeinformers.SharedInformerFactory,
 	informerFactory informers.SharedInformerFactory) *GitController {
 
-	deploymentInformer := kubeInformerFactory.Apps().V1beta1().Deployments()
-	serviceInformer := kubeInformerFactory.Core().V1().Services()
+	configmapInformer := kubeInformerFactory.Core().V1().ConfigMaps()
 	remoteInformer := informerFactory.Gitkube().V1alpha1().Remotes()
 
 	controller := &GitController{
 		kubeclientset: kubeclientset,
 
-		servicesLister: serviceInformer.Lister(),
-		servicesSynced: serviceInformer.Informer().HasSynced,
-
-		deploymentsLister: deploymentInformer.Lister(),
-		deploymentsSynced: deploymentInformer.Informer().HasSynced,
+		configmapsLister: configmapInformer.Lister(),
+		configmapsSynced: configmapInformer.Informer().HasSynced,
 
 		remotesGetter: clientset.GitkubeV1alpha1(),
 		remotesLister: remoteInformer.Lister(),
 		remotesSynced: remoteInformer.Informer().HasSynced,
 
-		remoteworkqueue:     workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "remote"),
-		deploymentworkqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "gitkubed-deploy"),
-		serviceworkqueue:    workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "gitkubed-svc"),
+		remoteworkqueue:    workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "remote"),
+		configmapworkqueue: workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "gitkube-ci-conf"),
 	}
 
 	l.Info("Setting up event handlers")
-	// Set up an event handler for when Foo resources change
-
-	serviceInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	configmapInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			service := obj.(*corev1.Service)
+			cm := obj.(*corev1.ConfigMap)
 
-			if service.Name != gitkubeServiceName {
+			if cm.Name != gitkubeConfigMapName {
 				return
 			}
 
-			controller.serviceEnqueue(obj)
+			controller.configmapEnqueue(obj)
 		},
 		UpdateFunc: func(old, new interface{}) {
-			oldService := old.(*corev1.Service)
-			newService := new.(*corev1.Service)
+			oldCm := old.(*corev1.ConfigMap)
+			newCm := new.(*corev1.ConfigMap)
 
-			if oldService.Name != gitkubeServiceName {
+			if oldCm.Name != gitkubeConfigMapName {
 				return
 			}
 
-			if oldService.ResourceVersion == newService.ResourceVersion {
+			if oldCm.ResourceVersion == newCm.ResourceVersion {
 				return
 			}
 
-			controller.serviceEnqueue(new)
+			controller.configmapEnqueue(new)
 		},
 		DeleteFunc: func(obj interface{}) {
-			service := obj.(*corev1.Service)
+			cm := obj.(*corev1.ConfigMap)
 
-			if service.Name != gitkubeServiceName {
+			if cm.Name != gitkubeConfigMapName {
 				return
 			}
 
-			controller.serviceEnqueue(obj)
-		},
-	})
-
-	deploymentInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			deployment := obj.(*appsv1beta1.Deployment)
-
-			if deployment.Name != gitkubeDeploymentName {
-				return
-			}
-
-			controller.deploymentEnqueue(obj)
-		},
-		UpdateFunc: func(old, new interface{}) {
-			oldDeployment := old.(*appsv1beta1.Deployment)
-			newDeployment := new.(*appsv1beta1.Deployment)
-
-			if oldDeployment.Name != gitkubeDeploymentName {
-				return
-			}
-
-			if oldDeployment.ResourceVersion == newDeployment.ResourceVersion {
-				return
-			}
-
-			controller.deploymentEnqueue(new)
-		},
-		DeleteFunc: func(obj interface{}) {
-			deployment := obj.(*appsv1beta1.Deployment)
-
-			if deployment.Name != gitkubeDeploymentName {
-				return
-			}
-
-			controller.deploymentEnqueue(obj)
+			controller.configmapEnqueue(obj)
 		},
 	})
 
@@ -173,12 +123,6 @@ func NewController(
 			controller.remoteEnqueue(obj)
 		},
 		UpdateFunc: func(old, new interface{}) {
-			oldRemote := old.(*v1alpha1.Remote)
-			newRemote := new.(*v1alpha1.Remote)
-			if oldRemote.ResourceVersion == newRemote.ResourceVersion {
-				return
-			}
-
 			controller.remoteEnqueue(new)
 		},
 		DeleteFunc: func(obj interface{}) {
@@ -191,13 +135,12 @@ func NewController(
 func (c *GitController) Run(stopCh <-chan struct{}) error {
 	defer runtime.HandleCrash()
 	defer c.remoteworkqueue.ShutDown()
-	defer c.serviceworkqueue.ShutDown()
-	defer c.deploymentworkqueue.ShutDown()
+	defer c.configmapworkqueue.ShutDown()
 
 	l.Info("Initialising gitkube")
 
 	l.Info("Waiting for cache sync")
-	if !cache.WaitForCacheSync(stopCh, c.remotesSynced, c.deploymentsSynced, c.servicesSynced) {
+	if !cache.WaitForCacheSync(stopCh, c.remotesSynced, c.configmapsSynced) {
 		return fmt.Errorf("timed out waiting for cache sync")
 	}
 	l.Info("Caches are synced")
@@ -205,11 +148,8 @@ func (c *GitController) Run(stopCh <-chan struct{}) error {
 	l.Info("Starting remote worker")
 	go wait.Until(c.runRemoteWorker, time.Second, stopCh)
 
-	l.Info("Starting deployment worker")
-	go wait.Until(c.runDeploymentWorker, time.Second, stopCh)
-
-	l.Info("Starting service worker")
-	go wait.Until(c.runServiceWorker, time.Second, stopCh)
+	l.Info("Starting configmap worker")
+	go wait.Until(c.runConfigMapWorker, time.Second, stopCh)
 
 	l.Info("Waiting for stop signal")
 	<-stopCh
