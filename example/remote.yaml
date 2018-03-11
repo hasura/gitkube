@@ -12,15 +12,11 @@ spec:
       secretKeyRef:
         name: regsecret
         key: .dockercfg
-# change to apps
   deployments:
   - name: www
     containers: 
     - name: www
       path: example/www
       dockerfile: example/www/Dockerfile
-status:
-  remoteUrl: ""
-  remoteUrlDesc: ""
 
  
