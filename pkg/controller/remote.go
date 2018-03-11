@@ -89,7 +89,7 @@ func (c *GitController) syncRemoteHandler(key string) error {
 	ciconfCopy := ciconf.DeepCopy()
 
 	ciconfCopy.Data = make(map[string]string)
-	ciconfCopy.Data["remotes.json"] = CreateGitkubeConf(c.remotesLister)
+	ciconfCopy.Data["remotes.json"] = CreateGitkubeConf(c.kubeclientset, c.remotesLister)
 
 	newHash = util.GetMD5Hash(ciconfCopy.Data["remotes.json"])
 

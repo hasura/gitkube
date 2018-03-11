@@ -7,11 +7,11 @@ spec:
   authorizedKeys:
   - "ssh-rsa <key>"
   registry:
-    server: "registry.hasura.io"
-    prefix: "user"
-    username: "user"
-    password: "password"
-    email: "username@hasura.io"
+    url: "registry.io/user"
+    credentials:
+      secretKeyRef:
+        name: regsecret
+        key: .dockercfg
 # change to apps
   deployments:
   - name: www
