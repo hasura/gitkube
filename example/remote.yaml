@@ -4,19 +4,18 @@ metadata:
   name: sampleremote
   namespace: default
 spec:
-  authorizedKeys:
-  - "ssh-rsa <key>"
-  registry:
-    url: "registry.io/user"
-    credentials:
-      secretKeyRef:
-        name: regsecret
-        key: .dockercfg
+  ## uncomment to add a registry
+  # registry:
+  #   url: "registry.io/user"
+  #   credentials:
+  #     secretKeyRef:
+  #       name: regsecret
+  #       key: .dockercfg
   deployments:
   - name: www
     containers: 
     - name: www
       path: example/www
       dockerfile: example/www/Dockerfile
-
- 
+  authorizedKeys:
+  - "ssh-rsa <key>"
