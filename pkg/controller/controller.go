@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package controller
 
 import (
 	"encoding/json"
@@ -37,7 +37,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 
-	util "github.com/hasura/gitkube/util"
+	util "github.com/hasura/gitkube/pkg/controller/util"
 
 	v1alpha1 "github.com/hasura/gitkube/pkg/apis/gitkube.sh/v1alpha1"
 
@@ -118,7 +118,7 @@ func (c *GitController) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer runtime.HandleCrash()
 	defer c.workqueue.ShutDown()
 
-	l.Info("Starting Danava controller")
+	l.Info("Starting gitkube controller")
 
 	l.Info("waiting for cache sync")
 	if !cache.WaitForCacheSync(stopCh, c.remotesSynced) {
