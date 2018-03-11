@@ -1,4 +1,4 @@
-# gitkube examplmple
+# gitkube example
 
 The following example assumes `gitkube` has been setup on the cluster.
 
