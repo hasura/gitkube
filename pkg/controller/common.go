@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"k8s.io/api/apps/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 
@@ -31,7 +32,7 @@ func RestartDeployment(kubeclientset *kubernetes.Clientset, deployment *v1beta1.
 	return nil
 }
 
-func CreateGitkubeConf(remotelister listers.RemoteLister) string {
+func CreateGitkubeConf(kubeclientset *kubernetes.Clientset, remotelister listers.RemoteLister) string {
 	remotes, err := remotelister.List(labels.Everything())
 	if err != nil {
 		//handle error
@@ -40,7 +41,7 @@ func CreateGitkubeConf(remotelister listers.RemoteLister) string {
 	remotesMap := make(map[string]interface{})
 	for _, remote := range remotes {
 		qualifiedRemoteName := fmt.Sprintf("%s-%s", remote.Namespace, remote.Name)
-		remotesMap[qualifiedRemoteName] = CreateRemoteJson(remote)
+		remotesMap[qualifiedRemoteName] = CreateRemoteJson(kubeclientset, remote)
 	}
 
 	bytes, err := json.Marshal(remotesMap)
@@ -52,7 +53,7 @@ func CreateGitkubeConf(remotelister listers.RemoteLister) string {
 
 }
 
-func CreateRemoteJson(remote *v1alpha1.Remote) interface{} {
+func CreateRemoteJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Remote) interface{} {
 	remoteMap := make(map[string]interface{})
 	deploymentsMap := make(map[string]interface{})
 
@@ -69,9 +70,31 @@ func CreateRemoteJson(remote *v1alpha1.Remote) interface{} {
 	}
 
 	remoteMap["authorized-keys"] = strings.Join(remote.Spec.AuthorizedKeys, "\n")
-	remoteMap["registry"] = ""
+	remoteMap["registry"] = CreateRegistryJson(kubeclientset, remote)
 	remoteMap["deployments"] = deploymentsMap
 
 	return remoteMap
 
+}
+
+func CreateRegistryJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Remote) interface{} {
+	registry := remote.Spec.Registry
+	registryMap := make(map[string]interface{})
+
+	if registry == (v1alpha1.RegistrySpec{}) {
+		return nil
+	}
+
+	registryMap["prefix"] = registry.Url
+
+	secret, err := kubeclientset.CoreV1().Secrets(remote.Namespace).Get(
+		registry.Credentials.SecretKeyRef.Name, metav1.GetOptions{})
+
+	if err != nil {
+		registryMap["dockercfg"] = ""
+	} else {
+		registryMap["dockercfg"] = string(secret.Data[registry.Credentials.SecretKeyRef.Key])
+	}
+
+	return registryMap
 }

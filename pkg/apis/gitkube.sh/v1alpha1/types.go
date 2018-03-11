@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,11 +29,12 @@ type RemoteStatus struct {
 }
 
 type RegistrySpec struct {
-	Server   string `json:"server"`
-	Prefix   string `json:"prefix"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Url         string          `json:"url,omitempty"`
+	Credentials CredentialsSpec `json:"credentials,omitempty"`
+}
+
+type CredentialsSpec struct {
+	SecretKeyRef corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
 }
 
 type DeploymentSpec struct {
