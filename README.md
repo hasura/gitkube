@@ -2,6 +2,21 @@
 
 Gitkube is a tool for building and deploying docker images on Kubernetes using `git push`. 
 
+After a simple initial setup, users can simply keep `git push`-ing their repos to build and deploy to Kubernetes automatically.
+
+![Gitkube](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube.gif)
+
+## Getting started
+
+Follow this [example](https://github.com/hasura/gitkube-example) to get started in few mins.
+
+## Install
+
+```sh
+$ curl https://raw.githubusercontent.com/hasura/gitkube/readme/manifests/gitkube-setup.yaml > gitkube-setup.yaml
+$ kubectl create -f gitkube-setup.yaml
+```
+
 ## Workflow
 
 Typical workflow consists of two parts:
@@ -69,17 +84,6 @@ And finally, `git push`
 $ git push sampleremote master
 ```
 
-## Install
-
-```sh
-$ wget https://raw.githubusercontent.com/hasura/gitkube/readme/manifests/gitkube-setup.yaml
-$ kubectl create -f gitkube-setup.yaml
-```
-
-## Example
-
-A full example is available at https://github.com/hasura/gitkube-example/
-
 ## Roadmap
 
 Gitkube is open to evolution. Some of the features to be added in future include:  
@@ -91,5 +95,5 @@ Gitkube is open to evolution. Some of the features to be added in future include
 
 Gitkube is an open source project licensed under Apache License 2.0
 
-Contributions are welcome. Please follow the [contributing guide](https://github.com/hasura/gitkube/blob/master/CONTRIBUTING) to get started.
+Contributions are welcome. 
 
