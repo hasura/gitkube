@@ -21,6 +21,10 @@ items:
           ports:
           - containerPort: 8080
             protocol: TCP
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
 - apiVersion: v1
   kind: Service
   metadata:
@@ -38,3 +42,4 @@ items:
     type: ClusterIP
 kind: List
 metadata: {}
+

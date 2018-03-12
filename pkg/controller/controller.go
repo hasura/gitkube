@@ -42,8 +42,20 @@ const (
 	gitkubeDeploymentName = "gitkubed"
 	gitkubeServiceName    = "gitkubed"
 	gitkubeConfigMapName  = "gitkube-ci-conf"
-	gitkubeNamespace      = "kube-system"
 )
+
+var (
+	gitkubeNamespace string
+)
+
+func SetGitkubeNamespace(ns string) {
+	if ns == "" {
+		gitkubeNamespace = "kube-system"
+
+	} else {
+		gitkubeNamespace = ns
+	}
+}
 
 type GitController struct {
 	kubeclientset *kubernetes.Clientset

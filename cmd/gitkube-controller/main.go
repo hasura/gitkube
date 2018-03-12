@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"time"
 
 	kubeinformers "k8s.io/client-go/informers"
@@ -40,6 +41,9 @@ var (
 
 func main() {
 	flag.Parse()
+
+	namespace := os.Getenv("GITKUBE_NAMESPACE")
+	controller.SetGitkubeNamespace(namespace)
 
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
