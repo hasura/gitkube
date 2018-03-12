@@ -101,21 +101,6 @@ spec:
           name: gitkube-ci-conf
         name: gitkube-ci-conf
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: gitkubed
-  namespace: kube-system
-spec:
-  ports:
-  - port: 22
-    protocol: TCP
-    targetPort: 22
-  selector:
-    app: gitkubed
-  sessionAffinity: None
-  type: LoadBalancer
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -138,7 +123,7 @@ spec:
       serviceAccountName: gitkube
       containers:
       - image: hasura/gitkube-controller:v0.1
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: controller
         resources:
           requests:

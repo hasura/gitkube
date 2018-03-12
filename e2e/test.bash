@@ -78,6 +78,8 @@ install_gitkube() {
     log "waiting for gitkube to start running"
     kctl --namespace "$GITKUBE_NAMESPACE" rollout status deployment/gitkubed
     kctl --namespace "$GITKUBE_NAMESPACE" rollout status deployment/gitkube-controller
+    kctl --namespace "$GITKUBE_NAMESPACE" expose deployment gitkubed --type=LoadBalancer --name=gitkubed
+
 }
 
 create_test_namespace() {
@@ -152,7 +154,7 @@ setup_local_remote() {
 
 # git push to the remote
 git_push() {
-    try git -C "$TEMP_REPO_DIR" push $REMOTE_NAME master
+    try git -C "$TEMP_REPO_DIR" push --no-verify $REMOTE_NAME master
 }
 
 # run basic test
