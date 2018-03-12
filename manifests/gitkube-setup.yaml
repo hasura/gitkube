@@ -115,4 +115,39 @@ spec:
     app: gitkubed
   sessionAffinity: None
   type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: gitkube-controller
+  name: gitkube-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: gitkube-controller
+    spec:
+      serviceAccountName: gitkube
+      containers:
+        image: hasura/gitkube-controller:v0.1
+        imagePullPolicy: Always
+        name: controller
+        resources:
+          requests:
+            cpu: 50m
+            memory: 200Mi
+        env:
+        - name: GITKUBE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+     
 
