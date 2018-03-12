@@ -6,9 +6,8 @@
 # The MIT License (MIT)
 #
 # Copyright (c) 2014-2015 FRITZ Thomas
-# Modified by:
-# Vamshi Surabhi, Anon Ray <build@hasura.io>
-# Copyright (c) 2016-2017 Hasura.
+#
+# Copyright  2018 The Gitkube authors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +49,7 @@ export BUILD_ROOT="${HOME}/build/${DEPLOY_REPO_NAME}"
 # export GIT_DIR="$(cd $(dirname $(dirname $0));pwd)"
 # export GIT_WORK_TREE="${BUILD_ROOT}"
 
-echo "Hasura build system : $(date): Initialising"
+echo "Gitkube build system : $(date): Initialising"
 echo
 
 # Create the build directory
@@ -78,13 +77,13 @@ do
     echo "Checking out '${DEPLOY_BRANCH}:${DEPLOY_NEWREV}' to '${BUILD_ROOT}'"
     git archive $DEPLOY_NEWREV | tar -x -C $BUILD_ROOT
 
-    export PRE_BUILD_HOOK="${BUILD_ROOT}/.hasura/pre-build"
-
-    if [ -f $PRE_BUILD_HOOK ]; then
-        echo
-        echo "Executing pre-build hook"
-        $PRE_BUILD_HOOK || exit 1
-    fi
+#    export PRE_BUILD_HOOK="${BUILD_ROOT}/.hasura/pre-build"
+#
+#    if [ -f $PRE_BUILD_HOOK ]; then
+#        echo
+#        echo "Executing pre-build hook"
+#        $PRE_BUILD_HOOK || exit 1
+#    fi
 
     echo ""
     echo "$(echo $DEPLOYMENTS | wc -w) deployment(s) found in this repo"
@@ -166,8 +165,7 @@ do
             echo ""
             echo ""
             echo -e "\e[31mUpdating deployment failed: $DEPLOYMENT_NAME \e[0m"
-            echo    "  # check the status for details:"
-            echo -e "  \e[36m$ hasura microservice list \e[0m"
+            echo -e "  \e[36m$ Check deployment logs \e[0m"
             echo ""
             echo ""
             exit 1
@@ -182,12 +180,7 @@ do
 done
 
 echo
-echo "Hasura build system : $(date): Finished build"
-echo ""
-echo ""
-echo -e "Next steps:"
-echo -e "  \e[36m$ hasura api-console         \e[90m# Explore the instant Hasura APIs\e[0m"
-echo -e "  \e[36m$ hasura microservices list  \e[90m# Browse the microservices running on your cluster\e[0m"
+echo "Gitkube build system : $(date): Finished build"
 echo ""
 echo ""
 exit 0
