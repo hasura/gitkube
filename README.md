@@ -15,6 +15,9 @@ Follow this [example](https://github.com/hasura/gitkube-example) to get started 
 ```sh
 $ curl https://raw.githubusercontent.com/hasura/gitkube/readme/manifests/gitkube-setup.yaml > gitkube-setup.yaml
 $ kubectl create -f gitkube-setup.yaml
+
+$ #expose gitkubed service
+$ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
 
 ## Workflow
