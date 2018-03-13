@@ -28,6 +28,10 @@ Typical workflow consists of two parts:
 
 ### High level architecture
 
+There are basically 2 components to gitkube:
+- gitkube-controller: Manages Remote custom resource and propogates changes to gitkubed
+- gitkubed: Git host that builds docker image from git repo and rolls out deployment
+
 ![Architecture](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube-v0.1.png)
 
 ### Setting Remote
