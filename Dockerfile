@@ -1,5 +1,5 @@
 # TODO: change to a slimmer and latest version
-FROM golang:1.8.5-jessie as builder
+FROM golang:1.8.5-alpine as builder
 
 # setup the working directory
 WORKDIR /go/src/github.com/hasura/gitkube
