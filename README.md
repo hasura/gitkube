@@ -26,6 +26,10 @@ Typical workflow consists of two parts:
 - Setting Remote: Remote is a Kubernetes custom resource which contains rules for `git push` 
 - Deploying application: Once a Remote is setup, applications can be deployed using `git push <remote> master`
 
+### High level architecture
+
+![Architecture](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube-v0.1.png)
+
 ### Setting Remote
 A Remote resource consists of 3 parts:
 1. authorizedKeys: List of ssh-keys for authorizing `git push`.
