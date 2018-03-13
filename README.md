@@ -119,3 +119,8 @@ Gitkube is open to evolution. Some of the features to be added in future include
 Gitkube is an open source project licensed under Apache License 2.0
 
 Contributions are welcome. 
+
+## Maintainers
+
+This work has come out of the work at [hasura.io](https://hasura.io). 
+Current maintainers @tirumaraiselvan @shahidhk. 
