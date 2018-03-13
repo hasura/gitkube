@@ -111,8 +111,8 @@ $ git push sampleremote master
 
 Gitkube is open to evolution. Some of the features to be added in future include:  
 
-- Allowing all apps (daemonset, statefulset) to be deployed using `git push`. Current support is limited to deployments.
-- Allowing different git hooks to be integrated
+- Allowing all apps (daemonset, statefulset) to be deployed using `git push`. Current support is limited to deployments. [#19](https://github.com/hasura/gitkube/issues/19)
+- Allowing different git hooks to be integrated [#20](https://github.com/hasura/gitkube/issues/19)
 
 ## Contributing
 
