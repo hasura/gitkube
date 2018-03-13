@@ -10,7 +10,7 @@ get_changes_hash()
     # Whether anything changed in the repo
     export GIT_DIRTY="$GIT_STATUS$GIT_DIFF_INDEX"
     if [ -n "$GIT_DIRTY" ]; then
-        DIRTY_HASH_SHORT="$(echo $GIT_DIRTY | shasum | awk '{print $1}' | tail -c 9)"
+        DIRTY_HASH_SHORT="$(echo $GIT_DIRTY | sha256sum | awk '{print $1}' | tail -c 9)"
         echo -dirty-$DIRTY_HASH_SHORT
     else
         echo ''
