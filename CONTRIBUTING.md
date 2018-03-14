@@ -4,13 +4,13 @@ Thank you for your interest in developing gitkube. Refer to this guide to get st
 
 ## Pre-requisites
 
-- You must have Go 1.8+
-- You need docker to build image
-- You need a k8s cluster to test your build
+- Go 1.8+ (not required if building with docker)
+- Docker to build and push images
+- Kubernetes cluster to test your build
 
 ## Fork the repo
 
-Fork the repo and clone it locally at your GOPATH
+Fork the repo and clone it locally to your GOPATH
 
 ```
 $ mkdir -p $GOPATH/src/github.com/hasura
@@ -27,26 +27,30 @@ $ git remote add upstream https://github.com/hasura/gitkube.git
 
 ## Make changes, build and push
 
-- Make changes to the code.
-- Edit `Makefile` and set `IMAGE_REGISTRY`
+- Make changes to the code
+- Set `IMAGE_REGISTRY` env var to your docker hub or any other image registry (e.g. `quay.io/<username>` or just `<docker-hub-username>`)
 
 ```sh
+$ export IMAGE_REGISTRY=<your-image-registry>
 $ make build-all
 $ make push-all
 ```
 
-This will edit the registry in `manifest/gitkube-setup.yaml` with the built docker image.
+This will edit the image name in `manifest/gitkube-setup.yaml` with the built docker image.
 
 ## Test
+
+Run an end-to-end test if everything is working well. If your change adds a new feature, try to add it in the tests too.
 
 ```sh
 $ cd e2e
 $ ./test.bash
 
+# teardown after the tests
+$ ./teardown.bash
 ```
 
 ## Send PR
 
-If all looks well, send a PR and if accepted, maintainers will release it.
-
+If all looks well, send a PR!
 
