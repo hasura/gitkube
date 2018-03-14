@@ -125,4 +125,4 @@ Contributions are welcome.
 ## Maintainers
 
 This project has come out of the work at [hasura.io](https://hasura.io). 
-Current maintainers @tirumaraiselvan @shahidhk. 
+Current maintainers [@Tirumarai](https://twitter.com/Tirumarai) [@shahidh_k](https://twitter.com/shahidh_k). 
