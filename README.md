@@ -125,3 +125,4 @@ Contributions are welcome.
 This project has come out of the work at [hasura.io](https://hasura.io). 
 Current maintainers [@Tirumarai](https://twitter.com/Tirumarai), [@shahidh_k](https://twitter.com/shahidh_k). 
 
+Follow [@gitkube](https://twitter.com/gitkube.sh) to stay updated.
