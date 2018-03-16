@@ -71,6 +71,7 @@ type GitController struct {
 	configmapworkqueue workqueue.RateLimitingInterface
 }
 
+// NewController returns a GitController
 func NewController(
 	kubeclientset *kubernetes.Clientset,
 	clientset *clientset.Clientset,
@@ -144,6 +145,7 @@ func NewController(
 	return controller
 }
 
+// Run starts the worker threads for remote and configmap work queues
 func (c *GitController) Run(stopCh <-chan struct{}) error {
 	defer runtime.HandleCrash()
 	defer c.remoteworkqueue.ShutDown()
