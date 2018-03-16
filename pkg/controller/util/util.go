@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 )
 
+// GetMD5Hash takes a string and returns its MD5 hash
 func GetMD5Hash(text string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(text))

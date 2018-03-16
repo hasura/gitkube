@@ -7,6 +7,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// GetExternalIP gets the name or IP of (gitkubed) service
+// Returns error for unsupported Service types
 func GetExternalIP(kubeclientset *kubernetes.Clientset, service *corev1.Service) (string, error) {
 	switch service.Spec.Type {
 	case corev1.ServiceTypeClusterIP:
@@ -38,6 +40,7 @@ func GetExternalIP(kubeclientset *kubernetes.Clientset, service *corev1.Service)
 
 }
 
+// GetLoadBalancerIPOrName gets the name or IP from LoadBalancerIngress resource
 func GetLoadBalancerIPOrName(ingress corev1.LoadBalancerIngress) string {
 	if ingress.IP != "" {
 		return ingress.IP

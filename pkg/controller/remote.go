@@ -76,7 +76,7 @@ func (c *GitController) syncRemoteHandler(key string) error {
 
 	ciconf, err := c.configmapsLister.ConfigMaps(gitkubeNamespace).Get(gitkubeConfigMapName)
 	if err != nil {
-		//create config map
+		//create config map?
 		return err
 	}
 
