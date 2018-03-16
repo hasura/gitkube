@@ -1,0 +1,48 @@
+---
+---
+
+@import "{{ site.theme }}";
+.wd_100
+{
+    width: 100%;
+    float: left;
+}
+.wd_60
+{
+    width: 60%;
+}
+.wd_40
+{
+    width: 40%;
+}
+.display_inline
+{
+    float: left;
+}
+.logo
+{
+    padding-bottom: 10px;
+}
+.logo .logo_img
+{
+    width: 150px;
+    curser: pointer;
+}
+.add_padd_bottom
+{
+    padding-bottom: 20px;
+}
+.description
+{
+    font-size: 16px;
+    font-weight: 400;
+}
+.red_color
+{
+    color: #8E0202;
+    font-size: 20px;
+}
+.add_padd_bottom_small
+{
+    padding-bottom: 5px;
+}
