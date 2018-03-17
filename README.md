@@ -18,9 +18,19 @@ After a simple initial setup, users can simply keep `git push`-ing their repos t
 1. Ideal for development where you can push your WIP branch to the cluster to test.
 2. Reference implementation for writing git-based automation on your server. Fork this repo and create your own CRD + controller + git remote hook that can do things on the Kubernetes cluster.
 
+## Features:
+- No dependencies except native tooling (git, kubectl)
+- Plug and play installation
+- Simple public key based authentication
+- RBAC ready - Control access to git remotes using RBAC
+- Support for namespace based multi-tenancy - Remotes can only deploy to their own namespace
+- No assumptions about repository structure 
+
 ## Getting started
 
-Install gitkube
+Gitkube will run on any Kubernetes vendor/distribution AS IS. In case you find any difficulties in the setup, please comment on [#33](https://github.com/hasura/gitkube/issues/33) 
+
+#### Install gitkube
 
 ```sh
 $ kubectl create -f https://raw.githubusercontent.com/hasura/gitkube/master/manifests/gitkube-setup.yaml
@@ -28,7 +38,7 @@ $ kubectl create -f https://raw.githubusercontent.com/hasura/gitkube/master/mani
 $ #expose gitkubed service
 $ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
-
+#### Example
 Follow this [example](https://github.com/hasura/gitkube-example) repo for a typical workflow of gitkube.
 
 
