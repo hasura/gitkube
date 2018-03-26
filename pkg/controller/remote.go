@@ -128,8 +128,8 @@ func (c *GitController) syncRemoteHandler(key string) error {
 		remoteUrlDesc = ""
 	}
 
-	//if remote url changed, then update remote
-	if remote.Status.RemoteUrl != remoteUrl {
+	//if remote url changed or empty, then update remote
+	if (remote.Status.RemoteUrl != remoteUrl) || (remoteUrl == "") {
 		remoteCopy := remote.DeepCopy()
 		remoteCopy.Status.RemoteUrl = remoteUrl
 		remoteCopy.Status.RemoteUrlDesc = remoteUrlDesc
