@@ -31,7 +31,7 @@ func GetExternalIP(kubeclientset *kubernetes.Clientset, service *corev1.Service)
 		return loadbalancerIPOrName, nil
 
 	case corev1.ServiceTypeNodePort:
-		return "", fmt.Errorf("manually configure remote for gitkube service of type %s", corev1.ServiceTypeNodePort, ". E.g.: ssh://<namespace>-<remote-name>@<any-node-ip>:<node-port>/~/git/<namespace>-<remote-name>")
+		return "", fmt.Errorf("manually configure remote for gitkube service of type %s. E.g.: ssh://<namespace>-<remote-name>@<any-node-ip>:<node-port>/~/git/<namespace>-<remote-name>", corev1.ServiceTypeNodePort)
 	default:
 		return "", fmt.Errorf("unknown gitkube service type %s", service.Spec.Type)
 	}
