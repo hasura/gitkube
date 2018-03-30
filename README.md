@@ -1,8 +1,18 @@
+![Gitkube Logo](assets/images/gitkube-h-w.png)
+
 # Gitkube
 
 Gitkube is a tool for building and deploying docker images on Kubernetes using `git push`. 
 
 After a simple initial setup, users can simply keep `git push`-ing their repos to build and deploy to Kubernetes automatically.
+
+[![GoDoc](https://godoc.org/github.com/hasura/gitkube?status.svg)](https://godoc.org/github.com/hasura/gitkube) 
+<a href="https://discord.gg/SX9Rte5">
+  <img src="https://img.shields.io/discord/407792526867693568.svg?logo=discord" alt="chat on Discord">
+</a>
+<a href="https://twitter.com/intent/follow?screen_name=gitkube">
+  <img src="https://img.shields.io/twitter/follow/gitkube.svg?style=social&logo=twitter" alt="follow on Twitter">
+</a>
 
 ![Gitkube](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube.gif)
 
@@ -32,7 +42,6 @@ $ kubectl create -f https://raw.githubusercontent.com/hasura/gitkube/master/mani
 $ #expose gitkubed service
 $ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
-
 #### Example
 Follow this [example](https://github.com/hasura/gitkube-example) repo for a typical workflow of gitkube.
 
@@ -124,7 +133,7 @@ $ git push sampleremote master
 Gitkube is open to evolution. Some of the features to be added in future include:  
 
 - Allowing all apps (daemonset, statefulset) to be deployed using `git push`. Current support is limited to deployments. [#19](https://github.com/hasura/gitkube/issues/19)
-- Allowing different git hooks to be integrated. [#20](https://github.com/hasura/gitkube/issues/20)
+- Allowing different git hooks to be integrated [#20](https://github.com/hasura/gitkube/issues/20)
 
 ## Contributing
 
