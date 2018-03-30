@@ -16,6 +16,8 @@ After a simple initial setup, users can simply keep `git push`-ing their repos t
 
 ![Gitkube](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube.gif)
 
+gitkube.sh is a young project; don't forget to [star the repo](https://github.com/hasura/gitkube) to show ❤️ and to keep up!
+
 ## When should I use gitkube?
 1. Ideal for development where you can push your WIP branch to the cluster to test.
 2. Reference implementation for writing git-based automation on your server. Fork this repo and create your own CRD + controller + git remote hook that can do things on the Kubernetes cluster.
@@ -143,5 +145,3 @@ Contributions are welcome.
 
 This project has come out of the work at [hasura.io](https://hasura.io). 
 Current maintainers [@Tirumarai](https://twitter.com/Tirumarai), [@shahidh_k](https://twitter.com/shahidh_k). 
-
-Follow [@gitkube](https://twitter.com/gitkube) to stay updated.
