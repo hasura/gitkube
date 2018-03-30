@@ -145,3 +145,5 @@ Contributions are welcome.
 
 This project has come out of the work at [hasura.io](https://hasura.io). 
 Current maintainers [@Tirumarai](https://twitter.com/Tirumarai), [@shahidh_k](https://twitter.com/shahidh_k). 
+
+Gitkube logo concept and design by [Samudra Gupta](https://www.linkedin.com/in/samudra-gupta-b6a3a238/).
