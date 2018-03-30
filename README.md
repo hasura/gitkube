@@ -1,3 +1,5 @@
+![Gitkube Logo](artifacts/gitkube-h-w.png)
+
 # Gitkube
 
 Gitkube is a tool for building and deploying docker images on Kubernetes using `git push`. 
