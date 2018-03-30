@@ -7,7 +7,7 @@ Gitkube is a tool for building and deploying docker images on Kubernetes using `
 After a simple initial setup, users can simply keep `git push`-ing their repos to build and deploy to Kubernetes automatically.
 
 [![GoDoc](https://godoc.org/github.com/hasura/gitkube?status.svg)](https://godoc.org/github.com/hasura/gitkube) 
-<a href="https://discord.gg/e5UKTbv">
+<a href="https://discord.gg/SX9Rte5">
   <img src="https://img.shields.io/discord/407792526867693568.svg?logo=discord" alt="chat on Discord">
 </a>
 <a href="https://twitter.com/intent/follow?screen_name=gitkube">
