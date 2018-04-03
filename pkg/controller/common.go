@@ -78,7 +78,6 @@ func CreateRemoteJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Remo
 	remoteMap["deployments"] = deploymentsMap
 
 	return remoteMap
-
 }
 
 // createRegistryJson takes a remote and returns a reshaped map of its registry
@@ -96,9 +95,17 @@ func createRegistryJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Re
 		registry.Credentials.SecretKeyRef.Name, metav1.GetOptions{})
 
 	if err != nil {
-		registryMap["dockercfg"] = ""
-	} else {
-		registryMap["dockercfg"] = string(secret.Data[registry.Credentials.SecretKeyRef.Key])
+		return registryMap
+	}
+
+	secretKey := registry.Credentials.SecretKeyRef.Key
+	switch secretKey {
+	case ".dockercfg":
+		registryMap["dockercfg"] = string(secret.Data[secretKey])
+	case ".dockerconfigjson":
+		registryMap["dockerconfigjson"] = string(secret.Data[secretKey])
+	default:
+		return registryMap
 	}
 
 	return registryMap
