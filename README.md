@@ -116,7 +116,7 @@ status:
 Add the generated `remoteUrl` in git
 
 ```sh
-$ git add remote sampleremote ssh://default-sampleremote@35.225.226.96/~/git/default-sampleremote
+$ git remote add sampleremote ssh://default-sampleremote@35.225.226.96/~/git/default-sampleremote
 ```
 
 And finally, `git push`
