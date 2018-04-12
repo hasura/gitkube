@@ -89,10 +89,8 @@ spec:
   registry:
     url: "registry.io/user"
     credentials:
-    # dockercfg secret
-      secretKeyRef:
-        name: regsecret
-        key: .dockercfg
+    # docker-registry secret
+      secretRef: regsecret
 
 # Define deployment rules
   deployments:

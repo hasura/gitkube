@@ -74,10 +74,24 @@ EOF
         if [ "$REGISTRY_CONF" != "null" ]; then
             echo "registry information is being processed"
             export REGISTRY_PREFIX=$(echo $REGISTRY_CONF | jq -r '.prefix')
+
             DOCKERCFG=$(echo $REGISTRY_CONF | jq -r '.dockercfg')
-            echo "writing dockercfg to $HOME_DIR/.dockercfg"
-            echo $DOCKERCFG > $HOME_DIR/.dockercfg
-            chown -R $repo:$repo $HOME_DIR/.dockercfg
+            if [ "$DOCKERCFG" != "null" ]; then
+                echo "Found secret type .dockercfg"
+                echo "writing dockercfg to $HOME_DIR/.dockercfg"
+                echo $DOCKERCFG > $HOME_DIR/.dockercfg
+                chown -R $repo:$repo $HOME_DIR/.dockercfg
+            fi
+
+            DOCKERCONFIGJSON=$(echo $REGISTRY_CONF | jq -r '.dockerconfigjson')
+            if [ "$DOCKERCONFIGJSON" != "null" ]; then
+                echo "Found secret type .dockerconfigjson"
+                echo "writing dockerconfigjson to $HOME_DIR/.docker/config.json"
+                mkdir -p $HOME_DIR/.docker
+                echo $DOCKERCONFIGJSON > $HOME_DIR/.docker/config.json
+                chown -R $repo:$repo $HOME_DIR/.docker/config.json
+            fi
+
         fi
 
         export REPO_OPTS=$(echo $GIT_REMOTES_CONF | jq -c --arg r $repo '.[$r].deployments')
