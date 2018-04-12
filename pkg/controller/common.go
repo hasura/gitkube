@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"k8s.io/api/apps/v1beta1"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
@@ -91,19 +92,27 @@ func createRegistryJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Re
 
 	registryMap["prefix"] = registry.Url
 
-	secret, err := kubeclientset.CoreV1().Secrets(remote.Namespace).Get(
-		registry.Credentials.SecretKeyRef.Name, metav1.GetOptions{})
+	var err error
+	var secret *v1.Secret
+
+	if registry.Credentials.SecretRef != "" {
+		secret, err = kubeclientset.CoreV1().Secrets(remote.Namespace).Get(
+			registry.Credentials.SecretRef, metav1.GetOptions{})
+	} else {
+		secret, err = kubeclientset.CoreV1().Secrets(remote.Namespace).Get(
+			registry.Credentials.SecretKeyRef.Name, metav1.GetOptions{})
+	}
 
 	if err != nil {
 		return registryMap
 	}
 
-	secretKey := registry.Credentials.SecretKeyRef.Key
-	switch secretKey {
-	case ".dockercfg":
-		registryMap["dockercfg"] = string(secret.Data[secretKey])
-	case ".dockerconfigjson":
-		registryMap["dockerconfigjson"] = string(secret.Data[secretKey])
+	secretType := secret.Type
+	switch secretType {
+	case "kubernetes.io/dockercfg":
+		registryMap["dockercfg"] = string(secret.Data[".dockercfg"])
+	case "kubernetes.io/dockerconfigjson":
+		registryMap["dockerconfigjson"] = string(secret.Data[".dockerconfigjson"])
 	default:
 		return registryMap
 	}
