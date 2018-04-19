@@ -41,6 +41,15 @@ $ kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.
 $ #expose gitkubed service
 $ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
+
+#### Provider walkthroughs
+
+The above installation steps work on most Kubernetes clusters. Detailed walkthroughs for few specific providers are also available:
+
+| Provider        | Link          |
+|-----------------|---------------|
+| minikube        |[minikube](docs/minikube.md) |
+
 #### Example
 Follow this [example](https://github.com/hasura/gitkube-example) repo for a typical workflow of gitkube.
 
