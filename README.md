@@ -60,7 +60,7 @@ Gitkube has three components:
 
 ### Workflow
 - Local dev: User creates a base git repo for the application with Dockerfile and K8s deployment
-- Setting Remote: User defined the spec for Remote containaing the rules for `git push` 
+- Setting Remote: User defined the spec for Remote containing the rules for `git push` 
 - Deploying application: Once a Remote is setup, application can be deployed to K8s using `git push <remote> master`
 
 #### Local dev
