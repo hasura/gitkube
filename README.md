@@ -6,13 +6,7 @@ Gitkube is a tool for building and deploying docker images on Kubernetes using `
 
 After a simple initial setup, users can simply keep `git push`-ing their repos to build and deploy to Kubernetes automatically.
 
-[![GoDoc](https://godoc.org/github.com/hasura/gitkube?status.svg)](https://godoc.org/github.com/hasura/gitkube) 
-<a href="https://discord.gg/SX9Rte5">
-  <img src="https://img.shields.io/discord/407792526867693568.svg?logo=discord" alt="chat on Discord">
-</a>
-<a href="https://twitter.com/intent/follow?screen_name=gitkube">
-  <img src="https://img.shields.io/twitter/follow/gitkube.svg?style=social&logo=twitter" alt="follow on Twitter">
-</a>
+[![GoDoc](https://godoc.org/github.com/hasura/gitkube?status.svg)](https://godoc.org/github.com/hasura/gitkube)
 
 ![Gitkube](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube.gif)
 
@@ -139,7 +133,15 @@ Gitkube is open to evolution. Some of the features to be added in future include
 
 Gitkube is an open source project licensed under Apache License 2.0
 
-Contributions are welcome. 
+Contributions are welcome.
+
+## Community and Support
+
+- Join the [Gitkube channel](https://kubernetes.slack.com/messages/CA68R8ZBN/) in the Kubernetes Slack group
+
+- <a href="https://twitter.com/intent/follow?screen_name=gitkube"><img src="https://img.shields.io/twitter/follow/gitkube.svg?style=social&logo=twitter" alt="follow on Twitter"></a>
+
+- Subscribe to the [Gitkube mailing list](http://eepurl.com/dsxoH9)
 
 ## Maintainers
 
@@ -147,3 +149,4 @@ This project has come out of the work at [hasura.io](https://hasura.io).
 Current maintainers [@Tirumarai](https://twitter.com/Tirumarai), [@shahidh_k](https://twitter.com/shahidh_k). 
 
 Gitkube logo concept and design by [Samudra Gupta](https://www.linkedin.com/in/samudra-gupta-b6a3a238/).
+
