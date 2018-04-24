@@ -144,7 +144,7 @@ Contributions are welcome.
 
 - <a href="https://twitter.com/intent/follow?screen_name=gitkube"><img src="https://img.shields.io/twitter/follow/gitkube.svg?style=social&logo=twitter" alt="follow on Twitter"></a>
 
-- Subscribe to the [Gitkube mailing list](http://eepurl.com/dswoZ5)
+- Subscribe to the [Gitkube mailing list](http://eepurl.com/dsxoH9)
 
 ## Maintainers
 
