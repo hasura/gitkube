@@ -94,12 +94,11 @@ spec:
   authorizedKeys:
   - "ssh-rsa your-ssh-public-key"
 
-# Provide registry details for pushing and pulling image from/into the cluster 
+# Provide registry details: https://github.com/hasura/gitkube/blob/master/docs/registry.md
   registry:
-    url: "registry.io/user"
+    url: "docker.io/user"
     credentials:
-    # docker-registry secret
-      secretRef: regsecret
+      secretRef: regsecret                # Name of docker-registry secret
 
 # Define deployment rules
   deployments:
