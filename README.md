@@ -36,10 +36,10 @@ Gitkube will run on any Kubernetes vendor/distribution AS IS. In case you find a
 #### Install gitkube
 
 ```sh
-$ kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.yaml
+kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.yaml
 
-$ #expose gitkubed service
-$ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
+#expose gitkubed service
+kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
 
 #### Provider walkthroughs
