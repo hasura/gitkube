@@ -30,10 +30,10 @@ Gitkube will run on any Kubernetes vendor/distribution AS IS. In case you find a
 #### Install gitkube
 
 ```sh
-$ kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.yaml
+kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.yaml
 
-$ #expose gitkubed service
-$ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
+#expose gitkubed service
+kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
 
 #### Provider walkthroughs
@@ -88,12 +88,11 @@ spec:
   authorizedKeys:
   - "ssh-rsa your-ssh-public-key"
 
-# Provide registry details for pushing and pulling image from/into the cluster 
+# Provide registry details: https://github.com/hasura/gitkube/blob/master/docs/registry.md
   registry:
-    url: "registry.io/user"
+    url: "docker.io/user"
     credentials:
-    # docker-registry secret
-      secretRef: regsecret
+      secretRef: regsecret                # Name of docker-registry secret
 
 # Define deployment rules
   deployments:
