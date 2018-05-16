@@ -69,6 +69,7 @@ func CreateRemoteJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Remo
 			containersMap[container.Name] = map[string]interface{}{
 				"path":       container.Path,
 				"dockerfile": container.Dockerfile,
+				"buildArgs":  container.BuildArgs,
 			}
 		}
 		deploymentsMap[deploymentTag] = containersMap

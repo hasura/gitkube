@@ -116,6 +116,16 @@ do
             DEPL_DOCKER_CONTEXT=$(echo $DEPL_OPTS | jq -c -r --arg i $IMAGE_NAME '.[$i].path')
             DEPL_DOCKER_FILE_PATH=$(echo $DEPL_OPTS | jq -c -r --arg i $IMAGE_NAME '.[$i].dockerfile')
             NO_CACHE=$(echo $DEPL_OPTS | jq -c -r --arg i $IMAGE_NAME '.[$i].noCache')
+            RAW_BUILD_ARGS=$(echo $DEPL_OPTS | jq -c -r --arg i $IMAGE_NAME '.[$i].buildArgs')
+            BUILD_ARGS=""
+
+            if [ "$RAW_BUILD_ARGS" != "null" ]; then
+              for buildarg in $(echo "$RAW_BUILD_ARGS" | jq -c '.[]'); do
+                  key=$(echo $buildarg | jq -r '.name')
+                  value=$(echo $buildarg | jq -r '.value')
+                  BUILD_ARGS="$BUILD_ARGS --build-arg $key=\"$value\""
+              done
+            fi
 
             # If dockerfile key is not present in the config, assume default
             # Dockerfile in the context path
@@ -145,7 +155,7 @@ do
                 NO_CACHE_ARGS="--no-cache"
             fi
             echo "Building Docker image : ${CUR_IMAGE}"
-            docker build $NO_CACHE_ARGS -t "${CUR_IMAGE}" -f "${DOCKERFILE_PATH}" "${DOCKER_BUILD_CONTEXT}" || exit 1
+            docker build $NO_CACHE_ARGS -t "${CUR_IMAGE}" -f "${DOCKERFILE_PATH}" $BUILD_ARGS "${DOCKER_BUILD_CONTEXT}" || exit 1
             if [ -n "$REGISTRY_PREFIX" ]; then
                 echo "pushing ${CUR_IMAGE} to registry"
                 docker push "${CUR_IMAGE}" || exit 1
