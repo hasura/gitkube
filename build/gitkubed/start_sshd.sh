@@ -94,6 +94,7 @@ EOF
 
         fi
 
+        export MANIFEST_OPTS=$(echo $GIT_REMOTES_CONF | jq -c --arg r $repo '.[$r].manifests')
         export REPO_OPTS=$(echo $GIT_REMOTES_CONF | jq -c --arg r $repo '.[$r].deployments')
         REPO_LOC=$HOME_DIR/git/$repo
 

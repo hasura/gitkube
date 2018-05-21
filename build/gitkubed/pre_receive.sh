@@ -37,6 +37,7 @@ export DEPLOY_ALLOWED_BRANCH="master"
 export DEPLOY_REPO_NAME=$(basename "$PWD")
 
 REPO_OPTS='{{REPO_OPTS}}'
+MANIFEST_OPTS='{{MANIFEST_OPTS}}'
 REGISTRY_PREFIX='{{REGISTRY_PREFIX}}'
 
 export DEPLOYMENTS=$(echo ${REPO_OPTS} | jq -c 'keys' | jq -r '.[]')
@@ -84,6 +85,47 @@ do
 #        echo "Executing pre-build hook"
 #        $PRE_BUILD_HOOK || exit 1
 #    fi
+
+    MANIFEST_LOC=$(echo $MANIFEST_OPTS | jq -r ".path")
+
+    if [ "$MANIFEST_LOC" != "" ]; then
+        echo
+        echo "Found manifests directory"
+        echo
+        if [ -f "$BUILD_ROOT/$MANIFEST_LOC/Chart.yaml" ]; then
+            echo "Found helm chart. Applying..."
+            HELM_OPTS=$(echo $MANIFEST_OPTS | jq -r ".helm")
+            HELM_RELEASE=$(echo $HELM_OPTS | jq -r ".release")
+            HELM_VALUES=$(echo $HELM_OPTS | jq -r ".values")
+            if [[ ("$HELM_RELEASE" == "") || ("$HELM_RELEASE" == "null") ]]; then
+                echo
+                echo "########"
+                echo "WARNING: No release name specified. Gitkube may not be able to update helm deployments"
+                echo "########"
+                echo
+                RELEASE_ARGS=""
+            else
+                RELEASE_ARGS=" -n $HELM_RELEASE"
+            fi
+            HELM_VALUES_ARGS=""
+            if [ "$HELM_VALUES" != "null" ]; then
+                for value in $(echo "$HELM_VALUES" | jq -c '.[]'); do
+                    k=$(echo $value | jq -r '.name')
+                    v=$(echo $value | jq -r '.value')
+                    HELM_VALUES_ARGS="$HELM_VALUE_ARGS --set $k=\"$v\""
+                done
+            fi
+            helm get $HELM_RELEASE > /dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                echo "Found release: $HELM_RELEASE. Skipping install..."
+            else
+                helm install ${RELEASE_ARGS} ${HELM_VALUES_ARGS} $BUILD_ROOT/$MANIFEST_LOC/
+            fi
+        else
+            echo "Applying..."
+            kubectl apply -f $BUILD_ROOT/$MANIFEST_LOC/
+        fi
+    fi
 
     echo ""
     echo "$(echo $DEPLOYMENTS | wc -w) deployment(s) found in this repo"
