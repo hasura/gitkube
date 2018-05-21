@@ -75,6 +75,7 @@ func CreateRemoteJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Remo
 	}
 
 	remoteMap["authorized-keys"] = strings.Join(remote.Spec.AuthorizedKeys, "\n")
+	remoteMap["manifests"] = remote.Spec.Manifests
 	remoteMap["registry"] = createRegistryJson(kubeclientset, remote)
 	remoteMap["deployments"] = deploymentsMap
 

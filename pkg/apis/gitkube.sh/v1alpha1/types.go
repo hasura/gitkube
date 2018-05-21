@@ -23,7 +23,10 @@ type RemoteSpec struct {
 
 	// Registry details for pushing and pulling from external registry
 	// +optional
-	Registry RegistrySpec `json:"registry"`
+	Registry RegistrySpec `json:"registry,omitempty"`
+
+	// Details for initializing manifests like k8s yamls or helm charts
+	Manifests ManifestSpec `json:"manifests,omitempty"`
 
 	// List of deployment spec.
 	// Deployment spec defines which deployments are under gitkube management
@@ -73,6 +76,25 @@ type ContainerSpec struct {
 
 	// Location of dockerfile for the container
 	Dockerfile string `json:"dockerfile"`
+}
+
+type ManifestSpec struct {
+	// Location of manifests folder
+	Path string `json:"path"`
+
+	// Helm spec contains release name and list of values to be set during helm install
+	// +optional
+	Helm HelmSpec `json:"helm,omitempty"`
+}
+
+type HelmSpec struct {
+	Release string      `json:"release,omitempty"`
+	Values  []NameValue `json:"values,omitempty"`
+}
+
+type NameValue struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
