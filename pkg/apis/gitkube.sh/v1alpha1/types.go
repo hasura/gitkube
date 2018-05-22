@@ -76,6 +76,14 @@ type ContainerSpec struct {
 
 	// Location of dockerfile for the container
 	Dockerfile string `json:"dockerfile"`
+
+	// Docker build args --build-args
+	BuildArgs []BuildArg `json:"buildArgs,omitempty"`
+}
+
+type BuildArg struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 type ManifestSpec struct {

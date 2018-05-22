@@ -99,7 +99,7 @@ spec:
   - name: www                             # Name of K8s deployment which is updated on git push
     containers: 
     - name: www                           # Name of container in the deployment which is built during git push
-      path: example/www                   # Location of source code in the git repo
+      path: example/www                   # Docker build context path in the git repo
       dockerfile: example/www/Dockerfile  # Location of Dockerfile for the source code
 ```
 
