@@ -7,6 +7,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	// enable gcp auth provider
+	gitkubeCS "github.com/hasura/gitkube/pkg/client/clientset/versioned"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
@@ -34,7 +35,14 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			return errors.Wrap(err, "unable to build clientset")
 		}
-		currentContext.KubeClient = clientset
+		currentContext.KubeClientSet = clientset
+
+		gitkubeclientset, err := gitkubeCS.NewForConfig(config)
+		if err != nil {
+			return errors.Wrap(err, "unable to build gitkube clientset")
+		}
+
+		currentContext.GitkubeClientSet = gitkubeclientset
 		return nil
 	},
 }
@@ -45,9 +53,10 @@ func Execute() error {
 
 // Context holds the contextual information for each execution
 type Context struct {
-	KubeContext string
-	Namespace   string
-	KubeClient  *kubernetes.Clientset
+	KubeContext      string
+	Namespace        string
+	KubeClientSet    *kubernetes.Clientset
+	GitkubeClientSet *gitkubeCS.Clientset
 }
 
 var currentContext Context
