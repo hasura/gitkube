@@ -1,5 +1,5 @@
 FROM debian:stretch-20171009
-MAINTAINER vamshi@34cross.in
+MAINTAINER tiru@hasura.io
 
 # Install openssh server
 RUN apt-get update \
@@ -15,6 +15,13 @@ RUN apt-get update \
  && strip --strip-unneeded /bin/kubectl \
  && chmod a+x /bin/kubectl \
  && upx /bin/kubectl \
+ && curl -o /tmp/helm.tar.gz 'https://storage.googleapis.com/kubernetes-helm/helm-v2.9.1-linux-amd64.tar.gz' \
+ && tar -xzf /tmp/helm.tar.gz -C /tmp \
+ && mv /tmp/linux-amd64/helm /bin/helm \
+ && rm -rf /tmp/helm.tar.gz /tmp/linux-amd64 \
+ && strip --strip-unneeded /bin/helm \
+ && chmod a+x /bin/helm \
+ && upx /bin/helm \
  && curl -o /usr/bin/mo 'https://raw.githubusercontent.com/tests-always-included/mo/master/mo' \
  && chmod a+x /usr/bin/mo \
  && apt-get purge -y --auto-remove upx-ucl binutils \
