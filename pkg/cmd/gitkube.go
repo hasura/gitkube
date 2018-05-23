@@ -4,12 +4,15 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	// enable gcp auth provider
 	gitkubeCS "github.com/hasura/gitkube/pkg/client/clientset/versioned"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
+
+var kconfig *rest.Config
 
 var rootCmd = &cobra.Command{
 	Use:           "gitkube",
@@ -26,18 +29,18 @@ var rootCmd = &cobra.Command{
 			configOverrides.CurrentContext = currentContext.KubeContext
 		}
 		kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
-		config, err := kubeConfig.ClientConfig()
+		kconfig, err = kubeConfig.ClientConfig()
 		if err != nil {
 			return errors.Wrap(err, "unable to build kubeconfig")
 		}
 		// create the clientset
-		clientset, err := kubernetes.NewForConfig(config)
+		clientset, err := kubernetes.NewForConfig(kconfig)
 		if err != nil {
 			return errors.Wrap(err, "unable to build clientset")
 		}
 		currentContext.KubeClientSet = clientset
 
-		gitkubeclientset, err := gitkubeCS.NewForConfig(config)
+		gitkubeclientset, err := gitkubeCS.NewForConfig(kconfig)
 		if err != nil {
 			return errors.Wrap(err, "unable to build gitkube clientset")
 		}
@@ -72,6 +75,7 @@ func init() {
 		docsCmd,
 		versionCmd,
 		NewInstallCmd(&currentContext),
+		newRemoteCmd(&currentContext),
 	)
 
 }
