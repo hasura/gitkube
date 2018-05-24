@@ -4,8 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	_ "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/install"
-	_ "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func NewInstallCmd(c *Context) *cobra.Command {
@@ -57,6 +56,49 @@ func (o *InstallOptions) InstallManifests() error {
 		return errors.Wrap(err, "error creating ServiceAccount")
 	}
 	logrus.Infof("ServiceAccount %s created", sa.GetName())
+
+	// create CRB
+	crb := newCRB(o.Namespace)
+	_, err = o.Context.KubeClientSet.Rbac().ClusterRoleBindings().Create(&crb)
+	if err != nil {
+		return errors.Wrap(err, "error creating ClusterRoleBinding")
+	}
+	logrus.Infof("ClusterRoleBinding %s created", crb.GetName())
+
+	// create CM
+	cm := newCM(o.Namespace)
+	_, err = o.Context.KubeClientSet.Core().ConfigMaps(o.Namespace).Create(&cm)
+	if err != nil {
+		return errors.Wrap(err, "error creating ConfigMap")
+	}
+	logrus.Infof("ConfigMap %s created", cm.GetName())
+
+	// create gitkubed
+	gitkubed := newGitkubed(o.Namespace)
+	_, err = o.Context.KubeClientSet.ExtensionsV1beta1().Deployments(o.Namespace).Create(&gitkubed)
+	if err != nil {
+		return errors.Wrapf(err, "error creating %s Deployment", gitkubed.GetName())
+	}
+	logrus.Infof("Deployment %s created", gitkubed.GetName())
+
+	// create gitkube-controller
+	gitkubeController := newGitkubeController(o.Namespace)
+	_, err = o.Context.KubeClientSet.ExtensionsV1beta1().Deployments(o.Namespace).Create(&gitkubeController)
+	if err != nil {
+		return errors.Wrapf(err, "error creating %s Deployment", gitkubeController.GetName())
+	}
+	logrus.Infof("Deployment %s created", gitkubeController.GetName())
+
+	// expose gitkubed deployment
+	svcType := corev1.ServiceType(o.Expose)
+	svc := newSVC(o.Namespace, svcType)
+	_, err = o.Context.KubeClientSet.Core().Services(o.Namespace).Create(&svc)
+	if err != nil {
+		return errors.Wrapf(err, "error creating Service")
+	}
+	logrus.Infof("Service %s created", svc.GetName())
+
+	logrus.Infof("gitkube installed in '%s' namespace", o.Namespace)
 
 	return nil
 }

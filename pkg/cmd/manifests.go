@@ -237,6 +237,29 @@ func newGitkubeController(namespace string) extensionsv1beta1.Deployment {
 		},
 	}
 }
+
+func newSVC(namespace string, svcType corev1.ServiceType) corev1.Service {
+	return corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "gitkubed",
+			Namespace: namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
+				{
+					Name: "ssh",
+					Port: 22,
+					TargetPort: intstr.IntOrString{
+						IntVal: 22,
+					},
+				},
+			},
+			Selector: map[string]string{"app": "gitkubed"},
+			Type:     svcType,
+		},
+	}
+}
+
 func int2ptr(i int32) *int32 {
 	return &i
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"github.com/hasura/gitkube/pkg/apis/gitkube.sh/v1alpha1"
@@ -8,6 +9,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 )
 
 func newRemoteCreateCmd(c *Context) *cobra.Command {
@@ -62,5 +65,29 @@ func (o *remoteCreateOptions) run() error {
 		return errors.Wrap(err, "k8s api error")
 	}
 	logrus.Infof("remote %s created", o.Remote.GetName())
+
+	logrus.Info("waiting for remote url")
+
+	w, err := gclient.Gitkube().Remotes(o.Remote.GetNamespace()).Watch(metav1.ListOptions{})
+	if err != nil {
+		return errors.Wrap(err, "watching remote failed")
+	}
+	for ev := range w.ResultChan() {
+		if ev.Type == watch.Modified || ev.Type == watch.Added {
+			r := ev.Object.(*v1alpha1.Remote)
+			if r.GetName() == o.Remote.GetName() {
+				status := r.Status
+				if status.RemoteUrl != "" {
+					fmt.Println(status.RemoteUrl)
+					// TODO: print git remote add instructions
+					break
+				}
+				if status.RemoteUrlDesc != "" {
+					// TODO: desc appear only on errors?
+					logrus.Errorln(status.RemoteUrlDesc)
+				}
+			}
+		}
+	}
 	return nil
 }
