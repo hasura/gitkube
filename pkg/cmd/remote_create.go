@@ -80,14 +80,13 @@ func (o *remoteCreateOptions) run() error {
 				if status.RemoteUrl != "" {
 					logrus.Infof("remote url: %s", status.RemoteUrl)
 					fmt.Printf(`
-  # add and push to this remote:
+  # add the remote to your git repo and push:
   git remote add %s %s
   git push %s master
 `, o.Remote.GetName(), status.RemoteUrl, o.Remote.GetName())
 					break
 				}
 				if status.RemoteUrlDesc != "" {
-					// TODO: add some backoff delay here?
 					logrus.Errorln(status.RemoteUrlDesc)
 				}
 			}

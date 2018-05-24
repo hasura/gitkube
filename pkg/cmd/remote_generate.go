@@ -136,7 +136,7 @@ func (o *remoteGenerateOptions) Run() error {
 	}
 	o.Remote.Spec.AuthorizedKeys = []string{string(sshKey)}
 
-	INIT_YAML := "K8s Yaml Manifests"
+	INIT_YAML := "K8s YAML Manifests"
 	INIT_HELM := "Helm Chart"
 	INIT_NONE := "None"
 	ps := promptui.Select{

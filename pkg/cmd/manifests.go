@@ -225,7 +225,7 @@ func newGitkubeController(namespace string) extensionsv1beta1.Deployment {
 					Labels: map[string]string{"app": "gitkube-controller"},
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: "gitkube",
+					ServiceAccountName: SAName,
 					Containers: []corev1.Container{
 						{
 							Name:            "sshd",

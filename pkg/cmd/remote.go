@@ -11,6 +11,8 @@ func newRemoteCmd(c *Context) *cobra.Command {
 	remoteCmd.AddCommand(
 		newRemoteGenerateCmd(c),
 		newRemoteCreateCmd(c),
+		newRemoteDeleteCmd(c),
+		newRemoteListCmd(c),
 	)
 
 	return remoteCmd

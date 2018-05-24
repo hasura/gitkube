@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"k8s.io/api/extensions/v1beta1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -88,6 +89,16 @@ func (o *uninstallOptions) run() error {
 	}
 
 	// delete gitkubed deployment
+	_, err = o.Context.KubeClientSet.ExtensionsV1beta1().Deployments(o.Namespace).UpdateScale(GitkubedDeploymentName, &v1beta1.Scale{ObjectMeta: metav1.ObjectMeta{Name: GitkubedDeploymentName, Namespace: o.Namespace}, Spec: v1beta1.ScaleSpec{Replicas: 0}})
+	if err != nil {
+		if k8serrors.IsNotFound(err) {
+			logrus.Warnf("Deployment %s does not exist, nothing to do", GitkubedDeploymentName)
+		} else {
+			return errors.Wrapf(err, "scaling Deployment %s to 0 failed", GitkubedDeploymentName)
+		}
+	} else {
+		logrus.Infof("Deployment %s scaled to zero", GitkubedDeploymentName)
+	}
 	err = o.Context.KubeClientSet.ExtensionsV1beta1().Deployments(o.Namespace).Delete(GitkubedDeploymentName, &metav1.DeleteOptions{})
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
@@ -100,6 +111,16 @@ func (o *uninstallOptions) run() error {
 	}
 
 	// delete gitkube-controller deployment
+	_, err = o.Context.KubeClientSet.ExtensionsV1beta1().Deployments(o.Namespace).UpdateScale(GitkubeControllerDeploymentName, &v1beta1.Scale{ObjectMeta: metav1.ObjectMeta{Name: GitkubeControllerDeploymentName, Namespace: o.Namespace}, Spec: v1beta1.ScaleSpec{Replicas: 0}})
+	if err != nil {
+		if k8serrors.IsNotFound(err) {
+			logrus.Warnf("Deployment %s does not exist, nothing to do", GitkubeControllerDeploymentName)
+		} else {
+			return errors.Wrapf(err, "scaling Deployment %s to 0 failed", GitkubeControllerDeploymentName)
+		}
+	} else {
+		logrus.Infof("Deployment %s scaled to zero", GitkubeControllerDeploymentName)
+	}
 	err = o.Context.KubeClientSet.ExtensionsV1beta1().Deployments(o.Namespace).Delete(GitkubeControllerDeploymentName, &metav1.DeleteOptions{})
 	if err != nil {
 		if k8serrors.IsNotFound(err) {
