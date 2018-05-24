@@ -14,6 +14,15 @@ spec:
   authorizedKeys:
   - "ssh-rsa your-ssh-public-key"
 
+# Specify manifests for initialisation
+  manifests:
+    path: mymanifests                     # Path of the manifests/chart directory in the repo
+    helm:
+      release: myapp                      # Release name, if using helm initialisation
+      values:                             # Set helm values, if using helm initialisation
+        name: username
+        value: janedoe
+
 # Provide registry details: https://github.com/hasura/gitkube/blob/master/docs/registry.md
   registry:
     url: "docker.io/user"
