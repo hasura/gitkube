@@ -38,7 +38,7 @@ kubectl create secret docker-registry regsecret \
 
 ```
 registry:
-  url: gcr.io/<user>
+  url: gcr.io/<project-id>
   credentials:
     secretRef: regsecret
 ```
