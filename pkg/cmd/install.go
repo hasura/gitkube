@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/manifoldco/promptui"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -28,7 +29,7 @@ func newInstallCmd(c *Context) *cobra.Command {
 
 	f := installCmd.Flags()
 
-	f.StringVar(&opts.Expose, "expose", "LoadBalancer", "k8s service type to expose the gitkubed deployment")
+	f.StringVar(&opts.Expose, "expose", "", "k8s service type to expose the gitkubed deployment")
 	f.StringVarP(&opts.Namespace, "namespace", "n", "kube-system", "namespace to create gitkube resources")
 
 	return installCmd
@@ -121,6 +122,21 @@ func (o *installOptions) installManifests() error {
 	}
 
 	// expose gitkubed deployment
+	if o.Expose == "" {
+		p := promptui.Select{
+			Label: "Choose the k8s service type to expose gitkubed",
+			Items: []string{
+				string(corev1.ServiceTypeClusterIP),
+				string(corev1.ServiceTypeExternalName),
+				string(corev1.ServiceTypeLoadBalancer),
+				string(corev1.ServiceTypeNodePort),
+			},
+		}
+		_, o.Expose, err = p.Run()
+		if err != nil {
+			return errors.Wrap(err, "unable to read prompt")
+		}
+	}
 	svcType := corev1.ServiceType(o.Expose)
 	svc := newSVC(o.Namespace, svcType)
 	_, err = o.Context.KubeClientSet.Core().Services(o.Namespace).Create(&svc)
