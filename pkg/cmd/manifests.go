@@ -97,7 +97,7 @@ func newGitkubed(namespace string) extensionsv1beta1.Deployment {
 					Labels: map[string]string{"app": "gitkubed"},
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: "gitkubed",
+					ServiceAccountName: "gitkube",
 					Containers: []corev1.Container{
 						{
 							Name:  "sshd",
@@ -173,6 +173,9 @@ func newGitkubed(namespace string) extensionsv1beta1.Deployment {
 							Name: "gitkube-ci-conf",
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: "gitkube-ci-conf",
+									},
 									DefaultMode: int2ptr(420),
 								},
 							},
@@ -208,7 +211,7 @@ func newGitkubeController(namespace string) extensionsv1beta1.Deployment {
 					Labels: map[string]string{"app": "gitkube-controller"},
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: "controller",
+					ServiceAccountName: "gitkube",
 					Containers: []corev1.Container{
 						{
 							Name:            "sshd",
