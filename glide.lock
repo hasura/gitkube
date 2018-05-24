@@ -1,11 +1,13 @@
-hash: cf7302b612231b2e10eb62e71235ee8c6f5c1a59eab51b17846f96b2f33a0167
-updated: 2018-05-23T01:04:10.749272379+05:30
+hash: f2e7fcc7eb898f7f4d42a31a5d483009d5eff86f38a47306086ba50c02a10f62
+updated: 2018-05-23T12:15:56.261499566Z
 imports:
 - name: cloud.google.com/go
   version: 3b1ae45394a234c385be014e9a488f2bb6eef821
   subpackages:
   - compute/metadata
   - internal
+- name: github.com/chzyer/readline
+  version: f6d7a1f6fbf35bbf9beb80dc63c56a29dcfb759f
 - name: github.com/cpuguy83/go-md2man
   version: 48d8747a2ca13185e7cc8efe6e9fc196a83f71a5
   subpackages:
@@ -30,8 +32,6 @@ imports:
   version: 6aced65f8501fe1217321abf0749d354824ba2ff
 - name: github.com/go-openapi/swag
   version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
-- name: github.com/gobuffalo/packr
-  version: 7f4074995d431987caaa35088199f13c44b24440
 - name: github.com/gogo/protobuf
   version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
   subpackages:
@@ -73,14 +73,29 @@ imports:
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/json-iterator/go
   version: 36b14963da70d11297d313183d7e6388c8510e1e
+- name: github.com/juju/ansiterm
+  version: 720a0952cc2ac777afc295d9861263e2a4cf96a1
+  subpackages:
+  - tabwriter
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
+- name: github.com/lunixbochs/vtclean
+  version: d14193dfc626125c831501c1c42340b4248e1f5a
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:
   - buffer
   - jlexer
   - jwriter
+- name: github.com/manifoldco/promptui
+  version: 3dd80c00b7cb0bc779d1c204da6f3ae0fa6a4eee
+  subpackages:
+  - list
+  - screenbuf
+- name: github.com/mattn/go-colorable
+  version: efa589957cd060542a26d2dd7832fd6a6c6c3ade
+- name: github.com/mattn/go-isatty
+  version: 6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
@@ -89,10 +104,6 @@ imports:
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
-- name: github.com/rakyll/statik
-  version: fcdcb7b85139b8b9ca1d8ef1d98d8593e90d117f
-  subpackages:
-  - fs
 - name: github.com/russross/blackfriday
   version: 3420fef03359a232d74c2ac1d237ac357cfca298
 - name: github.com/shurcooL/sanitized_anchor_name
@@ -192,7 +203,11 @@ imports:
   version: b7f8d354930c0edbd814b05196ac05ac71248f78
   subpackages:
   - pkg/apis/apiextensions
+  - pkg/apis/apiextensions/install
   - pkg/apis/apiextensions/v1beta1
+  - pkg/client/clientset/clientset
+  - pkg/client/clientset/clientset/scheme
+  - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
   version: 019ae5ada31de202164b118aee88ee2d14075c31
   subpackages:
@@ -200,6 +215,9 @@ imports:
   - pkg/api/errors
   - pkg/api/meta
   - pkg/api/resource
+  - pkg/apimachinery
+  - pkg/apimachinery/announced
+  - pkg/apimachinery/registered
   - pkg/apis/meta/internalversion
   - pkg/apis/meta/v1
   - pkg/apis/meta/v1/unstructured

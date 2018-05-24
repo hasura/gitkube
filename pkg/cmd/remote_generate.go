@@ -61,14 +61,15 @@ type dockerRegistry struct {
 func (o *remoteGenerateOptions) Run() error {
 
 	p := promptui.Prompt{
-		Label: "Remote name",
+		Label:   "Remote name",
+		Default: "myremote",
 	}
-
 	result, err := p.Run()
 	if err != nil {
 		return errors.Wrap(err, "error reading name prompt")
 	}
 
 	fmt.Println(result)
+
 	return nil
 }
