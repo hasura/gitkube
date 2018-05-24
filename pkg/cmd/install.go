@@ -7,8 +7,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func NewInstallCmd(c *Context) *cobra.Command {
-	var opts InstallOptions
+func newInstallCmd(c *Context) *cobra.Command {
+	var opts installOptions
 	opts.Context = c
 
 	// installCmd defines the install command
@@ -17,9 +17,9 @@ func NewInstallCmd(c *Context) *cobra.Command {
 		Short: "Install Gitkube on a Kubernetes cluster",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := opts.InstallManifests()
+			err := opts.installManifests()
 			if err != nil {
-				return errors.Wrap(err, "installing gitkube on cluster failed")
+				return errors.Wrap(err, "installing gitkube failed")
 			}
 			return nil
 		},
@@ -33,14 +33,14 @@ func NewInstallCmd(c *Context) *cobra.Command {
 	return installCmd
 }
 
-type InstallOptions struct {
+type installOptions struct {
 	Context   *Context
 	Expose    string
 	Namespace string
 }
 
 // InstallManifests installs all gitkube related manifests on the cluster
-func (o *InstallOptions) InstallManifests() error {
+func (o *installOptions) installManifests() error {
 	// create CRD
 	crd := newCRD()
 	_, err := o.Context.APIExtensionsClientSet.ApiextensionsV1beta1().CustomResourceDefinitions().Create(&crd)

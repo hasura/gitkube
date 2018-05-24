@@ -14,10 +14,12 @@ import (
 
 var Version = "v0.1.1"
 
+const CRDName = "remotes.gitkube.sh"
+
 func newCRD() apiextensionsv1beta1.CustomResourceDefinition {
 	return apiextensionsv1beta1.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "remotes.gitkube.sh",
+			Name: CRDName,
 		},
 		Spec: apiextensionsv1beta1.CustomResourceDefinitionSpec{
 			Group:   api.SchemeGroupVersion.Group,
@@ -33,25 +35,29 @@ func newCRD() apiextensionsv1beta1.CustomResourceDefinition {
 	}
 }
 
+const SAName = "gitkube"
+
 func newSA(namespace string) corev1.ServiceAccount {
 	return corev1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "gitkube",
+			Name:      SAName,
 			Namespace: namespace,
 		},
 	}
 
 }
 
+const CRBName = "gitkube"
+
 func newCRB(namespace string) rbacv1.ClusterRoleBinding {
 	return rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "gitkube",
+			Name: CRBName,
 		},
 		Subjects: []rbacv1.Subject{
 			{
 				Kind:      "ServiceAccount",
-				Name:      "gitkube",
+				Name:      SAName,
 				Namespace: namespace,
 			},
 		},
@@ -63,20 +69,24 @@ func newCRB(namespace string) rbacv1.ClusterRoleBinding {
 	}
 }
 
+const CMName = "gitkube-ci-conf"
+
 func newCM(namespace string) corev1.ConfigMap {
 	return corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "gitkube-ci-conf",
+			Name:      CMName,
 			Namespace: namespace,
 		},
 	}
 
 }
 
+const GitkubedDeploymentName = "gitkubed"
+
 func newGitkubed(namespace string) extensionsv1beta1.Deployment {
 	return extensionsv1beta1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "gitkubed",
+			Name:      GitkubedDeploymentName,
 			Namespace: namespace,
 		},
 		Spec: extensionsv1beta1.DeploymentSpec{
@@ -97,7 +107,7 @@ func newGitkubed(namespace string) extensionsv1beta1.Deployment {
 					Labels: map[string]string{"app": "gitkubed"},
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: "gitkube",
+					ServiceAccountName: SAName,
 					Containers: []corev1.Container{
 						{
 							Name:  "sshd",
@@ -146,7 +156,7 @@ func newGitkubed(namespace string) extensionsv1beta1.Deployment {
 									ReadOnly:  true,
 								},
 								{
-									Name:      "gitkube-ci-conf",
+									Name:      CMName,
 									MountPath: "/sshd-conf",
 								},
 							},
@@ -170,11 +180,11 @@ func newGitkubed(namespace string) extensionsv1beta1.Deployment {
 							},
 						},
 						{
-							Name: "gitkube-ci-conf",
+							Name: CMName,
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
 									LocalObjectReference: corev1.LocalObjectReference{
-										Name: "gitkube-ci-conf",
+										Name: CMName,
 									},
 									DefaultMode: int2ptr(420),
 								},
@@ -187,10 +197,12 @@ func newGitkubed(namespace string) extensionsv1beta1.Deployment {
 	}
 }
 
+const GitkubeControllerDeploymentName = "gitkube-controller"
+
 func newGitkubeController(namespace string) extensionsv1beta1.Deployment {
 	return extensionsv1beta1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "gitkube-controller",
+			Name:      GitkubeControllerDeploymentName,
 			Namespace: namespace,
 		},
 		Spec: extensionsv1beta1.DeploymentSpec{
@@ -241,10 +253,12 @@ func newGitkubeController(namespace string) extensionsv1beta1.Deployment {
 	}
 }
 
+const SVCName = "gitkubed"
+
 func newSVC(namespace string, svcType corev1.ServiceType) corev1.Service {
 	return corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "gitkubed",
+			Name:      SVCName,
 			Namespace: namespace,
 		},
 		Spec: corev1.ServiceSpec{

@@ -78,7 +78,8 @@ func init() {
 	rootCmd.AddCommand(
 		docsCmd,
 		versionCmd,
-		NewInstallCmd(&currentContext),
+		newInstallCmd(&currentContext),
+		newUninstallCmd(&currentContext),
 		newRemoteCmd(&currentContext),
 	)
 
