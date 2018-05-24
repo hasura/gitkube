@@ -30,7 +30,7 @@ func newRemoteGenerateCmd(c *Context) *cobra.Command {
 	opts.Remote = &remote
 	remoteGenerateCmd := &cobra.Command{
 		Use:   "generate",
-		Short: "Generate remote.yaml spec",
+		Short: "Generate a Remote spec in an interactive manner",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := opts.Run()
 			if err != nil {

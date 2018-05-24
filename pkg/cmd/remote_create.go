@@ -20,7 +20,7 @@ func newRemoteCreateCmd(c *Context) *cobra.Command {
 	opts.Remote = &remote
 	remoteCreateCmd := &cobra.Command{
 		Use:   "create",
-		Short: "Create gitkube remote on a cluster",
+		Short: "Create Remote for enabling git-push, from a spec file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := opts.run()
 			if err != nil {
@@ -31,7 +31,7 @@ func newRemoteCreateCmd(c *Context) *cobra.Command {
 	}
 
 	f := remoteCreateCmd.Flags()
-	f.StringVarP(&opts.SpecFile, "file", "f", "", "spec file to read")
+	f.StringVarP(&opts.SpecFile, "file", "f", "", "spec file")
 
 	return remoteCreateCmd
 }
@@ -70,7 +70,7 @@ func (o *remoteCreateOptions) run() error {
 
 	w, err := gclient.Gitkube().Remotes(o.Remote.GetNamespace()).Watch(metav1.ListOptions{})
 	if err != nil {
-		return errors.Wrap(err, "watching remote failed")
+		return errors.Wrap(err, "getting updates on remotes failed")
 	}
 	for ev := range w.ResultChan() {
 		if ev.Type == watch.Modified || ev.Type == watch.Added {
@@ -78,12 +78,16 @@ func (o *remoteCreateOptions) run() error {
 			if r.GetName() == o.Remote.GetName() {
 				status := r.Status
 				if status.RemoteUrl != "" {
-					fmt.Println(status.RemoteUrl)
-					// TODO: print git remote add instructions
+					logrus.Infof("remote url: %s", status.RemoteUrl)
+					fmt.Printf(`
+  # add and push to this remote:
+  git remote add %s %s
+  git push %s master
+`, o.Remote.GetName(), status.RemoteUrl, o.Remote.GetName())
 					break
 				}
 				if status.RemoteUrlDesc != "" {
-					// TODO: desc appear only on errors?
+					// TODO: add some backoff delay here?
 					logrus.Errorln(status.RemoteUrlDesc)
 				}
 			}

@@ -14,7 +14,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:           "gitkube",
-	Short:         "Manage Gitkube installation on a Kubernetes cluster",
+	Short:         "Install and manage gitkube on a Kubernetes cluster",
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -72,7 +72,7 @@ var currentContext Context
 func init() {
 	// global flags
 	// TODO: read defaults from env vars
-	rootCmd.PersistentFlags().StringVar(&currentContext.KubeContext, "kube-context", "", "kubecontext to connect")
+	rootCmd.PersistentFlags().StringVar(&currentContext.KubeContext, "kube-context", "", "kubecontext to use")
 
 	// sub-commands
 	rootCmd.AddCommand(
@@ -82,5 +82,4 @@ func init() {
 		newUninstallCmd(&currentContext),
 		newRemoteCmd(&currentContext),
 	)
-
 }
