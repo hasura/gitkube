@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 
 	"github.com/hasura/gitkube/pkg/apis/gitkube.sh/v1alpha1"
-	"github.com/hasura/gitkube/pkg/client/clientset/versioned/scheme"
+	gitkubescheme "github.com/hasura/gitkube/pkg/client/clientset/versioned/scheme"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -19,11 +19,7 @@ func newRemoteCreateCmd(c *Context) *cobra.Command {
 		Use:   "create",
 		Short: "Create gitkube remote on a cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := opts.initialize()
-			if err != nil {
-				return errors.Wrap(err, "creating remote failed")
-			}
-			err = opts.parse()
+			err := opts.run()
 			if err != nil {
 				return errors.Wrap(err, "creating remote failed")
 			}
@@ -46,19 +42,15 @@ type remoteCreateOptions struct {
 	Context *Context
 }
 
-func (o *remoteCreateOptions) initialize() error {
+func (o *remoteCreateOptions) run() error {
 	data, err := ioutil.ReadFile(o.SpecFile)
 	if err != nil {
 		return errors.Wrap(err, "error reading file")
 	}
 	o.RawData = data
-	return nil
-}
-
-func (o *remoteCreateOptions) parse() error {
 	gclient := o.Context.GitkubeClientSet
 
-	d := scheme.Codecs.UniversalDeserializer()
+	d := gitkubescheme.Codecs.UniversalDeserializer()
 	obj, _, err := d.Decode(o.RawData, nil, nil)
 	if err != nil {
 		return errors.Wrap(err, "parsing yaml as a valid remote failed")
@@ -67,9 +59,8 @@ func (o *remoteCreateOptions) parse() error {
 
 	_, err = gclient.Gitkube().Remotes(o.Remote.GetNamespace()).Create(o.Remote)
 	if err != nil {
-		return errors.Wrap(err, "creating remote failed")
+		return errors.Wrap(err, "k8s api error")
 	}
-
-	fmt.Println(o.Remote)
+	logrus.Infof("remote %s created", o.Remote.GetName())
 	return nil
 }
