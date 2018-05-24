@@ -112,7 +112,7 @@ do
                 for value in $(echo "$HELM_VALUES" | jq -c '.[]'); do
                     k=$(echo $value | jq -r '.name')
                     v=$(echo $value | jq -r '.value')
-                    HELM_VALUES_ARGS="$HELM_VALUE_ARGS --set $k=\"$v\""
+                    HELM_VALUES_ARGS="$HELM_VALUES_ARGS --set $k=$v"
                 done
             fi
             helm get $HELM_RELEASE > /dev/null 2>&1
