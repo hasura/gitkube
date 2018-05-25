@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/homedir"
 )
 
 func newRemoteGenerateCmd(c *Context) *cobra.Command {
@@ -31,6 +32,12 @@ func newRemoteGenerateCmd(c *Context) *cobra.Command {
 	remoteGenerateCmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate a Remote spec in an interactive manner",
+		Long:  "An interactive prompt-driven approach to generate Remote spec, rather than writing yaml by hand",
+		Example: `  # Generate a remote and save it as 'example-remote.yaml':
+  gitkube remote generate -f example-remote.yaml
+
+  # Shows interactive prompts to type-in/select options.
+  # Contacts the cluster to create docker registry secret (if provided)`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := opts.Run()
 			if err != nil {
@@ -47,31 +54,20 @@ func newRemoteGenerateCmd(c *Context) *cobra.Command {
 	return remoteGenerateCmd
 }
 
-type initMethod string
-type initMethodHelm initMethod
-type initMethodKubectl initMethod
-type initMethodNone initMethod
-
 type remoteGenerateOptions struct {
 	Context      *Context
 	OutputFormat string
 	OutputFile   string
 
-	SSHPublicKeyFile string
-
-	InitMethod         initMethod
-	ManifestsDirectory string
-
-	DockerRegistry dockerRegistry
-
 	Remote *v1alpha1.Remote
 }
 
 type dockerRegistry struct {
-	ConfigFile string
-	URL        string
-	Username   string
-	Password   string
+	Server      string
+	URL         string
+	Username    string
+	Password    string
+	AuthEncoded string
 }
 
 type dockerConfigJson struct {
@@ -97,15 +93,22 @@ type DockerConfigEntryWithAuth struct {
 	Auth string `json:"auth,omitempty"`
 }
 
+func handlePromptError(err error) error {
+	if err == promptui.ErrInterrupt {
+		return errors.New("cancelled by user")
+	}
+	return errors.Wrap(err, "prompt failed")
+}
+
 func (o *remoteGenerateOptions) Run() error {
 
 	p := promptui.Prompt{
 		Label:   "Remote name",
-		Default: "myremote",
+		Default: "example",
 	}
 	r, err := p.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 	o.Remote.SetName(r)
 
@@ -115,23 +118,23 @@ func (o *remoteGenerateOptions) Run() error {
 	}
 	r, err = p.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 	o.Remote.SetNamespace(r)
 
-	// TODO: check output on  windows
-	homeDir := os.Getenv("HOME")
-	keyFile := filepath.Join(homeDir, ".ssh", "id_rsa.pub")
+	keyFile := filepath.Join(homedir.HomeDir(), ".ssh", "id_rsa.pub")
 	p = promptui.Prompt{
-		Label:   "Public key file",
-		Default: keyFile,
+		Label:     "SSH public key file",
+		Default:   keyFile,
+		IsVimMode: true,
 	}
 	r, err = p.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 	sshKey, err := ioutil.ReadFile(r)
 	if err != nil {
+		// TODO: (show command to) generate SSH key?
 		return errors.Wrap(err, "cannot read ssh key file")
 	}
 	o.Remote.Spec.AuthorizedKeys = []string{string(sshKey)}
@@ -145,7 +148,7 @@ func (o *remoteGenerateOptions) Run() error {
 	}
 	_, r, err = ps.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 	if r == INIT_HELM || r == INIT_YAML {
 		p = promptui.Prompt{
@@ -153,7 +156,7 @@ func (o *remoteGenerateOptions) Run() error {
 		}
 		r, err := p.Run()
 		if err != nil {
-			return errors.Wrap(err, "error reading prompt")
+			return handlePromptError(err)
 		}
 		o.Remote.Spec.Manifests = v1alpha1.ManifestSpec{
 			Path: r,
@@ -162,51 +165,40 @@ func (o *remoteGenerateOptions) Run() error {
 	}
 
 	// Docker registry
-
-	// TODO: ignore errors and show prompt if reading fails
-	dockerconfigjsonFile := filepath.Join(homeDir, ".docker", "config.json")
-	dockerconfigjsonData, err := ioutil.ReadFile(dockerconfigjsonFile)
-	if err != nil {
-		return errors.Wrap(err, "reading docker config failed")
-	}
-	var dcj dockerConfigJson
-	err = json.Unmarshal(dockerconfigjsonData, &dcj)
-	if err != nil {
-		return errors.Wrap(err, "parsing dockerconfigjson failed")
-	}
-
 	var server, registry, username, password, email string
 
-	if a := dcj.Auths.IndexDockerIO.Auth; a != "" {
-		d, err := base64.StdEncoding.DecodeString(a)
-		if err != nil {
-			return errors.Wrap(err, "decoding docker auth failed")
-		}
-		auth := strings.Split(string(d), ":")
-		username = auth[0]
-		password = auth[1]
+	optionOne := "docker.io login info (not found)"
+	dr, err := getDockerRegistryDetails()
+	if err == nil {
+		// getting docker registry succeeded, dr has details
+		optionOne = fmt.Sprintf("docker.io/%s", dr.Username)
 	}
-
+dockerRegistryPrompt:
 	ps = promptui.Select{
 		Label: "Choose docker registry",
 		Items: []string{
-			fmt.Sprintf("docker.io/%s", username),
+			optionOne,
 			"Specify a different registry",
 			"Skip for now",
 		},
 	}
 	i, r, err := ps.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 
 	var skipRegistry bool
 	switch i {
 	case 0:
-		// use existing username and password
-		registry = "docker.io"
-		server = dockerIOServer
-		email = fmt.Sprintf("%s@%s", username, registry)
+		if dr == nil {
+			logrus.Error("couldn't find docker.io login on this system, choose another option")
+			goto dockerRegistryPrompt
+		} else {
+			// use existing username and password
+			registry = dr.URL
+			server = dr.Server
+			email = fmt.Sprintf("%s@%s", dr.Username, dr.URL)
+		}
 	case 1:
 		// prompt for registry, username, password
 		p = promptui.Prompt{
@@ -215,7 +207,7 @@ func (o *remoteGenerateOptions) Run() error {
 		}
 		server, err = p.Run()
 		if err != nil {
-			return errors.Wrap(err, "error reading prompt")
+			return handlePromptError(err)
 		}
 		p = promptui.Prompt{
 			Label:   "Registry URL",
@@ -223,14 +215,14 @@ func (o *remoteGenerateOptions) Run() error {
 		}
 		registry, err = p.Run()
 		if err != nil {
-			return errors.Wrap(err, "error reading prompt")
+			return handlePromptError(err)
 		}
 		p = promptui.Prompt{
 			Label: "Username",
 		}
 		username, err = p.Run()
 		if err != nil {
-			return errors.Wrap(err, "error reading prompt")
+			return handlePromptError(err)
 		}
 		p = promptui.Prompt{
 			Label: "Password",
@@ -238,14 +230,15 @@ func (o *remoteGenerateOptions) Run() error {
 		}
 		password, err = p.Run()
 		if err != nil {
-			return errors.Wrap(err, "error reading prompt")
+			return handlePromptError(err)
 		}
 		p = promptui.Prompt{
-			Label: "Email",
+			Label:   "Email",
+			Default: fmt.Sprintf("%s@%s", username, registry),
 		}
 		email, err = p.Run()
 		if err != nil {
-			return errors.Wrap(err, "error reading prompt")
+			return handlePromptError(err)
 		}
 	case 2:
 		// do nothing
@@ -300,22 +293,22 @@ takeDeployment:
 	d.Containers = []v1alpha1.ContainerSpec{}
 	p = promptui.Prompt{
 		Label:   "Deployment name",
-		Default: "www",
+		Default: "app",
 	}
 	r, err = p.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 	d.Name = r
 takeContainer:
 	c := v1alpha1.ContainerSpec{}
 	p = promptui.Prompt{
 		Label:   "Container name",
-		Default: "www",
+		Default: "app",
 	}
 	r, err = p.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 	c.Name = r
 	p = promptui.Prompt{
@@ -324,16 +317,16 @@ takeContainer:
 	}
 	r, err = p.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 	c.Dockerfile = r
 	p = promptui.Prompt{
 		Label:   "Build context path",
-		Default: ".",
+		Default: "./",
 	}
 	r, err = p.Run()
 	if err != nil {
-		return errors.Wrap(err, "error reading prompt")
+		return handlePromptError(err)
 	}
 	c.Path = r
 
@@ -344,13 +337,12 @@ takeContainer:
 		IsConfirm: true,
 	}
 	r, err = p.Run()
-	if err != nil && err.Error() != "" {
-		return errors.Wrap(err, "error reading prompt")
+	if err != nil && err != promptui.ErrAbort {
+		return handlePromptError(err)
 	}
 	if r == "y" {
 		goto takeContainer
-	}
-	// TODO: handle else
+	} // TODO: handle else?
 
 	o.Remote.Spec.Deployments = append(o.Remote.Spec.Deployments, d)
 
@@ -359,12 +351,12 @@ takeContainer:
 		IsConfirm: true,
 	}
 	r, err = p.Run()
-	if err != nil && err.Error() != "" {
-		return errors.Wrap(err, "error reading prompt")
+	if err != nil && err != promptui.ErrAbort {
+		return handlePromptError(err)
 	}
 	if r == "y" {
 		goto takeDeployment
-	}
+	} // TODO: handle else?
 
 	spec, err := yaml.Marshal(o.Remote)
 	if err != nil {
@@ -398,8 +390,8 @@ takeContainer:
 				IsConfirm: true,
 			}
 			r, err = p.Run()
-			if err != nil && err.Error() != "" {
-				return errors.Wrap(err, "error reading prompt")
+			if err != nil && err != promptui.ErrAbort {
+				return handlePromptError(err)
 			}
 			if r == "y" {
 				overwrite = true
@@ -412,6 +404,7 @@ takeContainer:
 			if err != nil {
 				return errors.Wrap(err, "writing to file failed")
 			}
+			logrus.Infof("spec saved as '%s'\r\n", o.OutputFile)
 		}
 	}
 	return nil
@@ -420,4 +413,37 @@ takeContainer:
 func getDockerAuthString(username, password string) string {
 	data := fmt.Sprintf("%s:%s", username, password)
 	return base64.StdEncoding.EncodeToString([]byte(data))
+}
+
+func getDockerRegistryDetails() (*dockerRegistry, error) {
+	dockerconfigjsonFile := filepath.Join(homedir.HomeDir(), ".docker", "config.json")
+	dockerconfigjsonData, err := ioutil.ReadFile(dockerconfigjsonFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "reading docker config failed")
+	}
+	var dcj dockerConfigJson
+	err = json.Unmarshal(dockerconfigjsonData, &dcj)
+	if err != nil {
+		return nil, errors.Wrap(err, "parsing dockerconfigjson failed")
+	}
+
+	var username, password string
+
+	if a := dcj.Auths.IndexDockerIO.Auth; a != "" {
+		d, err := base64.StdEncoding.DecodeString(a)
+		if err != nil {
+			return nil, errors.Wrap(err, "decoding docker auth failed")
+		}
+		auth := strings.Split(string(d), ":")
+		username = auth[0]
+		password = auth[1]
+	}
+
+	return &dockerRegistry{
+		URL:         "docker.io",
+		Server:      dockerIOServer,
+		Username:    username,
+		Password:    password,
+		AuthEncoded: dcj.Auths.IndexDockerIO.Auth,
+	}, nil
 }

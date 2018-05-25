@@ -26,5 +26,5 @@ var versionCmd = &cobra.Command{
 		return nil
 	},
 	Example: `  # Print the version string:
-  $ gitkube version`,
+  gitkube version`,
 }

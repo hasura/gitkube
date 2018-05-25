@@ -17,7 +17,18 @@ func newInstallCmd(c *Context) *cobra.Command {
 	var installCmd = &cobra.Command{
 		Use:   "install",
 		Short: "Install Gitkube on a Kubernetes cluster",
-		Args:  cobra.NoArgs,
+		Long:  "Install all Gitkube components on the cluster and expose the gitkubed deployment",
+		Example: `  # Install Gitkube in 'kube-system' namespace:
+  gitkube install
+
+  # Install in another namespace:
+  gitkube install --namespace <your-namespace>
+
+  # The command prompts for a ServiceType to expose gitkubed deployment.
+  # Use '--expose' flag to set a ServiceType and skip the prompt
+  # Say, 'LoadBalancer':
+  gitkube install --expose LoadBalancer`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := opts.installManifests()
 			if err != nil {
@@ -29,8 +40,8 @@ func newInstallCmd(c *Context) *cobra.Command {
 
 	f := installCmd.Flags()
 
-	f.StringVar(&opts.Expose, "expose", "", "k8s service type to expose the gitkubed deployment")
-	f.StringVarP(&opts.Namespace, "namespace", "n", "kube-system", "namespace to create gitkube resources")
+	f.StringVarP(&opts.Expose, "expose", "e", "", "k8s service type to expose the gitkubed deployment")
+	f.StringVarP(&opts.Namespace, "namespace", "n", "kube-system", "namespace to create install gitkube resources in")
 
 	return installCmd
 }

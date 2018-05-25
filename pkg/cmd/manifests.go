@@ -11,11 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-var (
-	GitkubedVersion          = "854ae72"
-	GitkubeControllerVersion = "b24559a"
-)
-
 const CRDName = "remotes.gitkube.sh"
 
 func newCRD() apiextensionsv1beta1.CustomResourceDefinition {
@@ -113,7 +108,7 @@ func newGitkubed(namespace string) extensionsv1beta1.Deployment {
 					Containers: []corev1.Container{
 						{
 							Name:  "sshd",
-							Image: "hasura/gitkubed:" + GitkubedVersion,
+							Image: "hasura/gitkubed:" + GetVersion(),
 							Command: []string{
 								"bash",
 								"/sshd-lib/start_sshd.sh",
@@ -229,7 +224,7 @@ func newGitkubeController(namespace string) extensionsv1beta1.Deployment {
 					Containers: []corev1.Container{
 						{
 							Name:            "sshd",
-							Image:           "hasura/gitkube-controller:" + GitkubeControllerVersion,
+							Image:           "hasura/gitkube-controller:" + GetVersion(),
 							ImagePullPolicy: corev1.PullIfNotPresent,
 							Resources: corev1.ResourceRequirements{
 								Requests: corev1.ResourceList{

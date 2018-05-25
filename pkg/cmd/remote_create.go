@@ -21,6 +21,8 @@ func newRemoteCreateCmd(c *Context) *cobra.Command {
 	remoteCreateCmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create Remote for enabling git-push, from a spec file",
+		Example: `  # Create a remote by reading 'example-remote.yaml':
+  gitkube create -f example-remote.yaml`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := opts.run()
 			if err != nil {
@@ -32,6 +34,7 @@ func newRemoteCreateCmd(c *Context) *cobra.Command {
 
 	f := remoteCreateCmd.Flags()
 	f.StringVarP(&opts.SpecFile, "file", "f", "", "spec file")
+	remoteCreateCmd.MarkFlagRequired("file")
 
 	return remoteCreateCmd
 }
@@ -87,7 +90,7 @@ func (o *remoteCreateOptions) run() error {
 					break
 				}
 				if status.RemoteUrlDesc != "" {
-					logrus.Errorln(status.RemoteUrlDesc)
+					logrus.Fatalln(status.RemoteUrlDesc)
 				}
 			}
 		}

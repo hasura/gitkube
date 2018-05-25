@@ -11,8 +11,11 @@ func newRemoteDeleteCmd(c *Context) *cobra.Command {
 	var namespace string
 	remoteDeleteCmd := &cobra.Command{
 		Use:   "delete",
-		Short: "Delete a Remote",
-		Args:  cobra.ExactArgs(1),
+		Short: "Delete a Remote from the cluster",
+		Long:  "Delete a Gitkube remote from the cluster",
+		Example: `  # Delete remote called 'example':
+  gitkube remote delete example`,
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := c.GitkubeClientSet.Gitkube().Remotes(namespace).Delete(args[0], &metav1.DeleteOptions{})
 			if err != nil {
@@ -24,7 +27,7 @@ func newRemoteDeleteCmd(c *Context) *cobra.Command {
 	}
 
 	f := remoteDeleteCmd.Flags()
-	f.StringVarP(&namespace, "namespace", "n", "default", "namespace for the remote")
+	f.StringVarP(&namespace, "namespace", "n", "default", "namespace of the remote")
 
 	return remoteDeleteCmd
 }

@@ -14,9 +14,25 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:           "gitkube",
-	Short:         "Install and manage gitkube on a Kubernetes cluster",
+	Short:         "Build and deploy docker images to Kubernetes using git push",
+	Long:          "Install Gitkube and manage its Remotes on a Kubernetes cluster",
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	Example: `  # Get your application running on Kubernetes in 4 simple steps.
+
+  # Step 1: Install Gitkube on a Kubernetes cluster:
+  gitkube install
+
+  # Step 2: Generate a Gitkube Remote spec interactively and save it as 'example-remote.yaml':
+  gitkube remote generate -f example-remote.yaml
+
+  # Step 3: Create a Remote defined in 'example-remote.yaml' on the cluster:
+  gitkube remote create -f example-remote.yaml
+  # outputs the remote url
+
+  # Step 4: Add remote to the git repo and push:
+  git remote add example <remote_url>
+  git push example master`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) (err error) {
 		// create kubernetes client
 		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
@@ -72,7 +88,7 @@ var currentContext Context
 func init() {
 	// global flags
 	// TODO: read defaults from env vars
-	rootCmd.PersistentFlags().StringVar(&currentContext.KubeContext, "kube-context", "", "kubecontext to use")
+	rootCmd.PersistentFlags().StringVar(&currentContext.KubeContext, "kube-context", "", "kubernetes context to use")
 
 	// sub-commands
 	rootCmd.AddCommand(

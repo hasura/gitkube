@@ -16,8 +16,11 @@ func newUninstallCmd(c *Context) *cobra.Command {
 	// installCmd defines the install command
 	var uninstallCmd = &cobra.Command{
 		Use:   "uninstall",
-		Short: "Delete Gitkube components from a cluster",
-		Args:  cobra.NoArgs,
+		Short: "Uninstall Gitkube components from a cluster",
+		Long:  "Remove Gitkube and all dependencies from the cluster",
+		Example: `  # Uninstall gitkube:
+  gitkube uninstall`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := opts.run()
 			if err != nil {
