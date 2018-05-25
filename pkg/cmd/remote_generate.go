@@ -197,6 +197,8 @@ dockerRegistryPrompt:
 			// use existing username and password
 			registry = dr.URL
 			server = dr.Server
+			username = dr.Username
+			password = dr.Password
 			email = fmt.Sprintf("%s@%s", dr.Username, dr.URL)
 		}
 	case 1:
