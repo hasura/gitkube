@@ -30,8 +30,6 @@ push-all: push-controller push-gitkubed
 controller: build-controller push-controller
 gitkubed: build-gitkubed push-gitkubed
 
-all: build-all push-all
-
 # build cli locally, for all given platform/arch
 build-cli:
 	go get github.com/mitchellh/gox
@@ -48,3 +46,5 @@ build-cli-in-docker:
 	-v $(PWD):/go/src/github.com/hasura/gitkube \
 	gitkube-cli-builder \
 	make build-cli
+
+all: build-all push-all build-cli-in-docker
