@@ -36,7 +36,7 @@ build-cli:
 	gox -ldflags "-X github.com/hasura/gitkube/pkg/cmd.version=$(VERSION)" \
 	-os="linux darwin windows" \
 	-arch="amd64" \
-	-output="_output/$(VERSION)/gitkube-{{.OS}}-{{.Arch}}" \
+	-output="_output/$(VERSION)/gitkube_{{.OS}}_{{.Arch}}" \
 	./cmd/gitkube-cli/
 
 # build cli inside a docker container
