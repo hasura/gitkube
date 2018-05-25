@@ -53,7 +53,7 @@ type RegistrySpec struct {
 
 type CredentialsSpec struct {
 	// Secret which points to a docker-registry secret
-	SecretRef string `json:"secretRef",omitempty`
+	SecretRef string `json:"secretRef,omitempty"`
 
 	// Secret with key ref which points to a docker-registry secret
 	SecretKeyRef corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
