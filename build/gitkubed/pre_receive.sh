@@ -97,16 +97,7 @@ do
             HELM_OPTS=$(echo $MANIFEST_OPTS | jq -r ".helm")
             HELM_RELEASE=$(echo $HELM_OPTS | jq -r ".release")
             HELM_VALUES=$(echo $HELM_OPTS | jq -r ".values")
-            if [[ ("$HELM_RELEASE" == "") || ("$HELM_RELEASE" == "null") ]]; then
-                echo
-                echo "########"
-                echo "WARNING: No release name specified. Gitkube may not be able to update helm deployments"
-                echo "########"
-                echo
-                RELEASE_ARGS=""
-            else
-                RELEASE_ARGS=" -n $HELM_RELEASE"
-            fi
+
             HELM_VALUES_ARGS=""
             if [ "$HELM_VALUES" != "null" ]; then
                 for value in $(echo "$HELM_VALUES" | jq -c '.[]'); do
@@ -115,15 +106,20 @@ do
                     HELM_VALUES_ARGS="$HELM_VALUES_ARGS --set $k=$v"
                 done
             fi
-            helm get $HELM_RELEASE > /dev/null 2>&1
-            if [ $? -eq 0 ]; then
-                echo "Found release: $HELM_RELEASE. Skipping install..."
+
+            if [[ ("$HELM_RELEASE" == "") || ("$HELM_RELEASE" == "null") ]]; then
+                echo
+                echo "########"
+                echo "WARNING: No release name specified. Gitkube may not be able to update helm deployments"
+                echo "########"
+                echo
+                helm install ${HELM_VALUES_ARGS} $BUILD_ROOT/$MANIFEST_LOC/ || exit 1
             else
-                helm install ${RELEASE_ARGS} ${HELM_VALUES_ARGS} $BUILD_ROOT/$MANIFEST_LOC/
+                helm upgrade ${HELM_VALUES_ARGS} ${HELM_RELEASE} $BUILD_ROOT/$MANIFEST_LOC/ --install --force  || exit 1
             fi
         else
             echo "Applying..."
-            kubectl apply -f $BUILD_ROOT/$MANIFEST_LOC/
+            kubectl apply -f $BUILD_ROOT/$MANIFEST_LOC/ || exit 1
         fi
     fi
 
