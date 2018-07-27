@@ -1,12 +1,16 @@
 #!/usr/bin/env sh
 set -e
 
-export HOST_GROUP_ID=$(cat /hasura-data/group | grep '^docker' | cut -d: -f3)
-GROUP_WITH_HOST_GROUP_ID=$(getent group $HOST_GROUP_ID | cut -d: -f1)
-if [ -z "${GROUP_WITH_HOST_GROUP_ID}" ]; then
-    # Find the group id from the host and use it to create docker group
-    groupadd -g $HOST_GROUP_ID docker
-    GROUP_WITH_HOST_GROUP_ID="docker"
+# find the docker socket owner group id
+DOCKER_SOCK_OWNER_GROUP_ID=$(stat -c '%g' /var/run/docker.sock)
+# check the container's groups to see if it has a group with the same id
+DOCKER_SOCK_OWNER_GROUP=$(getent group "$DOCKER_SOCK_OWNER_GROUP_ID" | cut -d: -f1)
+if [ -z "${DOCKER_SOCK_OWNER_GROUP}" ]; then
+    # there is no group in the container with the given group id
+    # set owner group as 'docker'
+    DOCKER_SOCK_OWNER_GROUP="docker"
+    # create a new group with the same group id
+    groupadd -g "$DOCKER_SOCK_OWNER_GROUP_ID" "$DOCKER_SOCK_OWNER_GROUP"
 fi
 
 if [ -f /sshd-conf/remotes.json ]; then
@@ -29,7 +33,7 @@ if [ "$GIT_REMOTES_CONF" != "null" ]; then
         chown -R $repo:$repo $HOME_DIR/git-shell-commands
         chmod +x $HOME_DIR/git-shell-commands/no-interactive-login
 
-        usermod -aG $GROUP_WITH_HOST_GROUP_ID $repo
+        usermod -aG "$DOCKER_SOCK_OWNER_GROUP" "$repo"
 
         # Create the .ssh directory if it does not exist
         mkdir -p $HOME_DIR/.ssh
