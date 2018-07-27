@@ -249,8 +249,7 @@ dockerRegistryPrompt:
 	if !skipRegistry {
 		s := corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				// TODO: handle secret name conflicts
-				Name:      "regsecret",
+				Name:      o.Remote.GetName() + "-regsecret",
 				Namespace: o.Remote.GetNamespace(),
 			},
 			Type: corev1.SecretTypeDockerConfigJson,
@@ -284,7 +283,7 @@ dockerRegistryPrompt:
 		o.Remote.Spec.Registry = v1alpha1.RegistrySpec{
 			Url: fmt.Sprintf("%s/%s", registry, username),
 			Credentials: v1alpha1.CredentialsSpec{
-				SecretRef: "regsecret",
+				SecretRef: o.Remote.GetName() + "-regsecret",
 			},
 		}
 	}
