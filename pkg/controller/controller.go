@@ -58,7 +58,7 @@ func SetGitkubeNamespace(ns string) {
 }
 
 type GitController struct {
-	kubeclientset *kubernetes.Clientset
+	kubeclientset kubernetes.Interface
 
 	configmapsLister listercorev1.ConfigMapLister
 	configmapsSynced cache.InformerSynced
@@ -73,7 +73,7 @@ type GitController struct {
 
 // NewController returns a GitController
 func NewController(
-	kubeclientset *kubernetes.Clientset,
+	kubeclientset kubernetes.Interface,
 	clientset *clientset.Clientset,
 	kubeInformerFactory kubeinformers.SharedInformerFactory,
 	informerFactory informers.SharedInformerFactory) *GitController {

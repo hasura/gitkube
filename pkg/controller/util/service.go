@@ -9,7 +9,7 @@ import (
 
 // GetExternalIP gets the name or IP of (gitkubed) service
 // Returns error for unsupported Service types
-func GetExternalIP(kubeclientset *kubernetes.Clientset, service *corev1.Service) (string, error) {
+func GetExternalIP(kubeclientset kubernetes.Interface, service *corev1.Service) (string, error) {
 	switch service.Spec.Type {
 	case corev1.ServiceTypeClusterIP:
 		return "", fmt.Errorf("gitkube service type %s cannot be accessed from outside cluster. If this was intended, add remote manually",

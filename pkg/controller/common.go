@@ -18,7 +18,7 @@ import (
 
 // RestartDeployment takes a deployment and annotates the pod spec with current timestamp
 // This causes a fresh rollout of the deployment
-func RestartDeployment(kubeclientset *kubernetes.Clientset, deployment *v1beta1.Deployment) error {
+func RestartDeployment(kubeclientset kubernetes.Interface, deployment *v1beta1.Deployment) error {
 
 	timeannotation := fmt.Sprintf("%v", time.Now().Unix())
 
@@ -36,7 +36,7 @@ func RestartDeployment(kubeclientset *kubernetes.Clientset, deployment *v1beta1.
 }
 
 // CreateGitkubeConf takes a list of remotes, reshapes it and marshals it into a string
-func CreateGitkubeConf(kubeclientset *kubernetes.Clientset, remotelister listers.RemoteLister) string {
+func CreateGitkubeConf(kubeclientset kubernetes.Interface, remotelister listers.RemoteLister) string {
 	remotes, err := remotelister.List(labels.Everything())
 	if err != nil {
 		//handle error
@@ -58,7 +58,7 @@ func CreateGitkubeConf(kubeclientset *kubernetes.Clientset, remotelister listers
 }
 
 // CreateRemoteJson takes a remote and reshapes it
-func CreateRemoteJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Remote) interface{} {
+func CreateRemoteJson(kubeclientset kubernetes.Interface, remote *v1alpha1.Remote) interface{} {
 	remoteMap := make(map[string]interface{})
 	deploymentsMap := make(map[string]interface{})
 
@@ -84,7 +84,7 @@ func CreateRemoteJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Remo
 }
 
 // createRegistryJson takes a remote and returns a reshaped map of its registry
-func createRegistryJson(kubeclientset *kubernetes.Clientset, remote *v1alpha1.Remote) interface{} {
+func createRegistryJson(kubeclientset kubernetes.Interface, remote *v1alpha1.Remote) interface{} {
 	registry := remote.Spec.Registry
 	registryMap := make(map[string]interface{})
 

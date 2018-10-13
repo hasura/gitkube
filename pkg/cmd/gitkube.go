@@ -78,7 +78,7 @@ func Execute() error {
 type Context struct {
 	KubeContext            string
 	Namespace              string
-	KubeClientSet          *kubernetes.Clientset
+	KubeClientSet          kubernetes.Interface
 	GitkubeClientSet       *gitkubeCS.Clientset
 	APIExtensionsClientSet *apiextensionsclient.Clientset
 }
