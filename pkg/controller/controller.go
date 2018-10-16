@@ -33,9 +33,9 @@ import (
 	listercorev1 "k8s.io/client-go/listers/core/v1"
 
 	clientset "github.com/hasura/gitkube/pkg/client/clientset/versioned"
-	typed "github.com/hasura/gitkube/pkg/client/clientset/versioned/typed/gitkube/v1alpha1"
+	typed "github.com/hasura/gitkube/pkg/client/clientset/versioned/typed/gitkube.sh/v1alpha1"
 	informers "github.com/hasura/gitkube/pkg/client/informers/externalversions"
-	listers "github.com/hasura/gitkube/pkg/client/listers/gitkube/v1alpha1"
+	listers "github.com/hasura/gitkube/pkg/client/listers/gitkube.sh/v1alpha1"
 )
 
 const (

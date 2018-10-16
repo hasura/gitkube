@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	v1alpha1 "github.com/hasura/gitkube/pkg/apis/gitkube.sh/v1alpha1"
-	listers "github.com/hasura/gitkube/pkg/client/listers/gitkube/v1alpha1"
+	listers "github.com/hasura/gitkube/pkg/client/listers/gitkube.sh/v1alpha1"
 )
 
 // RestartDeployment takes a deployment and annotates the pod spec with current timestamp
