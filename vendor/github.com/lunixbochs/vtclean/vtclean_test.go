@@ -42,11 +42,19 @@ var tests = map[string]string{
 	"aaa \033[25;25mtest": "aaa test",
 
 	"bbb \033]4;1;rgb:38/54/71\033\\test": "bbb test",
-	"ccc \033]4;1;rgb:38/54/71test":       "ccc rgb:38/54/71test",
+	"ccc \033]4;1;rgb:38/54/71test":       "ccc gb:38/54/71test",
+
+	// tabs
+	"aa\tbb": "aa\tbb",
+
+	// carriage return
+	"aaa\rb": "baa",
 }
 
 var colorTests = map[string]string{
-	"aaa \033[25;25mtest": "aaa \033[25;25mtest\x1b[0m",
+	"aaa \033[25;25mtest":             "aaa \033[25;25mtest\x1b[0m",
+	"\033[0;m aa":                     "\033[0;m aa\033[0m",
+	"\033[32;1m$ echo foobar\033[0;m": "\033[32;1m$ echo foobar\033[0m",
 }
 
 func TestMain(t *testing.T) {

@@ -18,6 +18,65 @@ import (
 	"testing"
 )
 
+func runMarkdownBlockWithRenderer(input string, extensions int, renderer Renderer) string {
+	return string(Markdown([]byte(input), renderer, extensions))
+}
+
+func runMarkdownBlock(input string, extensions int) string {
+	htmlFlags := 0
+	htmlFlags |= HTML_USE_XHTML
+
+	renderer := HtmlRenderer(htmlFlags, "", "")
+
+	return runMarkdownBlockWithRenderer(input, extensions, renderer)
+}
+
+func runnerWithRendererParameters(parameters HtmlRendererParameters) func(string, int) string {
+	return func(input string, extensions int) string {
+		htmlFlags := 0
+		htmlFlags |= HTML_USE_XHTML
+
+		renderer := HtmlRendererWithParameters(htmlFlags, "", "", parameters)
+
+		return runMarkdownBlockWithRenderer(input, extensions, renderer)
+	}
+}
+
+func doTestsBlock(t *testing.T, tests []string, extensions int) {
+	doTestsBlockWithRunner(t, tests, extensions, runMarkdownBlock)
+}
+
+func doTestsBlockWithRunner(t *testing.T, tests []string, extensions int, runner func(string, int) string) {
+	// catch and report panics
+	var candidate string
+	defer func() {
+		if err := recover(); err != nil {
+			t.Errorf("\npanic while processing [%#v]: %s\n", candidate, err)
+		}
+	}()
+
+	for i := 0; i+1 < len(tests); i += 2 {
+		input := tests[i]
+		candidate = input
+		expected := tests[i+1]
+		actual := runner(candidate, extensions)
+		if actual != expected {
+			t.Errorf("\nInput   [%#v]\nExpected[%#v]\nActual  [%#v]",
+				candidate, expected, actual)
+		}
+
+		// now test every substring to stress test bounds checking
+		if !testing.Short() {
+			for start := 0; start < len(input); start++ {
+				for end := start + 1; end <= len(input); end++ {
+					candidate = input[start:end]
+					_ = runMarkdownBlock(candidate, extensions)
+				}
+			}
+		}
+	}
+}
+
 func TestPrefixHeaderNoExtensions(t *testing.T) {
 	var tests = []string{
 		"# Header 1\n",
@@ -144,7 +203,7 @@ func TestPrefixHeaderSpaceExtension(t *testing.T) {
 		"<ul>\n<li><p>List</p>\n\n<ul>\n<li><p>Nested list</p>\n\n" +
 			"<h1>Nested header</h1></li>\n</ul></li>\n</ul>\n",
 	}
-	doTestsBlock(t, tests, SpaceHeadings)
+	doTestsBlock(t, tests, EXTENSION_SPACE_HEADERS)
 }
 
 func TestPrefixHeaderIdExtension(t *testing.T) {
@@ -204,7 +263,7 @@ func TestPrefixHeaderIdExtension(t *testing.T) {
 		"<ul>\n<li><p>List</p>\n\n<ul>\n<li><p>Nested list</p>\n\n" +
 			"<h1 id=\"someid\">Nested header</h1></li>\n</ul></li>\n</ul>\n",
 	}
-	doTestsBlock(t, tests, HeadingIDs)
+	doTestsBlock(t, tests, EXTENSION_HEADER_IDS)
 }
 
 func TestPrefixHeaderIdExtensionWithPrefixAndSuffix(t *testing.T) {
@@ -247,16 +306,12 @@ func TestPrefixHeaderIdExtensionWithPrefixAndSuffix(t *testing.T) {
 			"<h1 id=\"PRE:someid:POST\">Nested header</h1></li>\n</ul></li>\n</ul>\n",
 	}
 
-	parameters := HTMLRendererParameters{
-		HeadingIDPrefix: "PRE:",
-		HeadingIDSuffix: ":POST",
+	parameters := HtmlRendererParameters{
+		HeaderIDPrefix: "PRE:",
+		HeaderIDSuffix: ":POST",
 	}
 
-	doTestsParam(t, tests, TestParams{
-		extensions:             HeadingIDs,
-		HTMLFlags:              UseXHTML,
-		HTMLRendererParameters: parameters,
-	})
+	doTestsBlockWithRunner(t, tests, EXTENSION_HEADER_IDS, runnerWithRendererParameters(parameters))
 }
 
 func TestPrefixAutoHeaderIdExtension(t *testing.T) {
@@ -307,7 +362,7 @@ func TestPrefixAutoHeaderIdExtension(t *testing.T) {
 		"# Header\n\n# Header 1\n\n# Header\n\n# Header",
 		"<h1 id=\"header\">Header</h1>\n\n<h1 id=\"header-1\">Header 1</h1>\n\n<h1 id=\"header-1-1\">Header</h1>\n\n<h1 id=\"header-1-2\">Header</h1>\n",
 	}
-	doTestsBlock(t, tests, AutoHeadingIDs)
+	doTestsBlock(t, tests, EXTENSION_AUTO_HEADER_IDS)
 }
 
 func TestPrefixAutoHeaderIdExtensionWithPrefixAndSuffix(t *testing.T) {
@@ -359,16 +414,12 @@ func TestPrefixAutoHeaderIdExtensionWithPrefixAndSuffix(t *testing.T) {
 		"<h1 id=\"PRE:header:POST\">Header</h1>\n\n<h1 id=\"PRE:header-1:POST\">Header 1</h1>\n\n<h1 id=\"PRE:header-1-1:POST\">Header</h1>\n\n<h1 id=\"PRE:header-1-2:POST\">Header</h1>\n",
 	}
 
-	parameters := HTMLRendererParameters{
-		HeadingIDPrefix: "PRE:",
-		HeadingIDSuffix: ":POST",
+	parameters := HtmlRendererParameters{
+		HeaderIDPrefix: "PRE:",
+		HeaderIDSuffix: ":POST",
 	}
 
-	doTestsParam(t, tests, TestParams{
-		extensions:             AutoHeadingIDs,
-		HTMLFlags:              UseXHTML,
-		HTMLRendererParameters: parameters,
-	})
+	doTestsBlockWithRunner(t, tests, EXTENSION_AUTO_HEADER_IDS, runnerWithRendererParameters(parameters))
 }
 
 func TestPrefixMultipleHeaderExtensions(t *testing.T) {
@@ -376,7 +427,7 @@ func TestPrefixMultipleHeaderExtensions(t *testing.T) {
 		"# Header\n\n# Header {#header}\n\n# Header 1",
 		"<h1 id=\"header\">Header</h1>\n\n<h1 id=\"header-1\">Header</h1>\n\n<h1 id=\"header-1-1\">Header 1</h1>\n",
 	}
-	doTestsBlock(t, tests, AutoHeadingIDs|HeadingIDs)
+	doTestsBlock(t, tests, EXTENSION_AUTO_HEADER_IDS|EXTENSION_HEADER_IDS)
 }
 
 func TestUnderlineHeaders(t *testing.T) {
@@ -476,7 +527,7 @@ func TestUnderlineHeadersAutoIDs(t *testing.T) {
 		"Header 1\n========\n\nHeader 1\n========\n",
 		"<h1 id=\"header-1\">Header 1</h1>\n\n<h1 id=\"header-1-1\">Header 1</h1>\n",
 	}
-	doTestsBlock(t, tests, AutoHeadingIDs)
+	doTestsBlock(t, tests, EXTENSION_AUTO_HEADER_IDS)
 }
 
 func TestHorizontalRule(t *testing.T) {
@@ -606,6 +657,9 @@ func TestUnorderedList(t *testing.T) {
 		"Paragraph\n\n* Linebreak\n",
 		"<p>Paragraph</p>\n\n<ul>\n<li>Linebreak</li>\n</ul>\n",
 
+		"*   List\n\n1. Spacer Mixed listing\n",
+		"<ul>\n<li>List</li>\n</ul>\n\n<ol>\n<li>Spacer Mixed listing</li>\n</ol>\n",
+
 		"*   List\n    * Nested list\n",
 		"<ul>\n<li>List\n\n<ul>\n<li>Nested list</li>\n</ul></li>\n</ul>\n",
 
@@ -651,8 +705,39 @@ func TestUnorderedList(t *testing.T) {
 
 		"* List\n\n    * sublist\n\n    normal text\n\n    * another sublist\n",
 		"<ul>\n<li><p>List</p>\n\n<ul>\n<li>sublist</li>\n</ul>\n\n<p>normal text</p>\n\n<ul>\n<li>another sublist</li>\n</ul></li>\n</ul>\n",
+
+		`* Foo
+
+        bar
+
+        qux
+`,
+		`<ul>
+<li><p>Foo</p>
+
+<pre><code>bar
+
+qux
+</code></pre></li>
+</ul>
+`,
 	}
 	doTestsBlock(t, tests, 0)
+}
+
+func TestFencedCodeBlockWithinList(t *testing.T) {
+	doTestsBlock(t, []string{
+		"* Foo\n\n    ```\n    bar\n\n    qux\n    ```\n",
+		`<ul>
+<li><p>Foo</p>
+
+<pre><code>bar
+
+qux
+</code></pre></li>
+</ul>
+`,
+	}, EXTENSION_FENCED_CODE)
 }
 
 func TestOrderedList(t *testing.T) {
@@ -733,6 +818,12 @@ func TestOrderedList(t *testing.T) {
 		"1. List\n\n          code block with spaces\n",
 		"<ol>\n<li><p>List</p>\n\n<pre><code>  code block with spaces\n</code></pre></li>\n</ol>\n",
 
+		"1. List\n\n* Spacer Mixed listing\n",
+		"<ol>\n<li>List</li>\n</ol>\n\n<ul>\n<li>Spacer Mixed listing</li>\n</ul>\n",
+
+		"1. List\n* Mixed listing\n",
+		"<ol>\n<li>List</li>\n<li>Mixed listing</li>\n</ol>\n",
+
 		"1. List\n    * Mixted list\n",
 		"<ol>\n<li>List\n\n<ul>\n<li>Mixted list</li>\n</ul></li>\n</ol>\n",
 
@@ -747,6 +838,26 @@ func TestOrderedList(t *testing.T) {
 
 		"1. numbers\n1. are ignored\n",
 		"<ol>\n<li>numbers</li>\n<li>are ignored</li>\n</ol>\n",
+
+		`1. Foo
+
+        bar
+
+
+
+        qux
+`,
+		`<ol>
+<li><p>Foo</p>
+
+<pre><code>bar
+
+
+
+qux
+</code></pre></li>
+</ol>
+`,
 	}
 	doTestsBlock(t, tests, 0)
 }
@@ -849,19 +960,16 @@ func TestDefinitionList(t *testing.T) {
 			"<dd><p>Definition b</p></dd>\n" +
 			"</dl>\n" +
 			"\n<p>Text 2</p>\n",
-	}
-	doTestsBlock(t, tests, DefinitionLists)
-}
 
-func TestConsecutiveLists(t *testing.T) {
-	var tests = []string{
-		"1. Hello\n\n* Hello\n\nTerm 1\n:   Definition a\n",
-		"<ol>\n<li>Hello</li>\n</ol>\n\n<ul>\n<li>Hello</li>\n</ul>\n\n<dl>\n<dt>Term 1</dt>\n<dd>Definition a</dd>\n</dl>\n",
-
-		"1. Not nested\n2. ordered list\n\n\t1. nested\n\t2. ordered list\n\n\t* nested\n\t* unordered list\n* Not nested\n* unordered list",
-		"<ol>\n<li><p>Not nested</p></li>\n\n<li><p>ordered list</p>\n\n<ol>\n<li>nested</li>\n<li>ordered list</li>\n</ol>\n\n<ul>\n<li>nested</li>\n<li>unordered list</li>\n</ul></li>\n</ol>\n\n<ul>\n<li>Not nested</li>\n<li>unordered list</li>\n</ul>\n",
+		"Term 1\n:   Definition a\n\n    Text 1\n\n    1. First\n    2. Second",
+		"<dl>\n" +
+			"<dt>Term 1</dt>\n" +
+			"<dd><p>Definition a</p>\n\n" +
+			"<p>Text 1</p>\n\n" +
+			"<ol>\n<li>First</li>\n<li>Second</li>\n</ol></dd>\n" +
+			"</dl>\n",
 	}
-	doTestsBlock(t, tests, DefinitionLists)
+	doTestsBlock(t, tests, EXTENSION_DEFINITION_LISTS)
 }
 
 func TestPreformattedHtml(t *testing.T) {
@@ -937,7 +1045,7 @@ func TestPreformattedHtmlLax(t *testing.T) {
 		"Paragraph\n\n<div>\nHow about here? >&<\n</div>\n\nAnd here?\n",
 		"<p>Paragraph</p>\n\n<div>\nHow about here? >&<\n</div>\n\n<p>And here?</p>\n",
 	}
-	doTestsBlock(t, tests, LaxHTMLBlocks)
+	doTestsBlock(t, tests, EXTENSION_LAX_HTML_BLOCKS)
 }
 
 func TestFencedCodeBlock(t *testing.T) {
@@ -1032,7 +1140,7 @@ func TestFencedCodeBlock(t *testing.T) {
 		"```\n[]:()\n[]:)\n[]:(\n[]:x\n[]:testing\n[:testing\n\n[]:\nlinebreak\n[]()\n\n[]:\n[]()\n```",
 		"<pre><code>[]:()\n[]:)\n[]:(\n[]:x\n[]:testing\n[:testing\n\n[]:\nlinebreak\n[]()\n\n[]:\n[]()\n</code></pre>\n",
 	}
-	doTestsBlock(t, tests, FencedCode)
+	doTestsBlock(t, tests, EXTENSION_FENCED_CODE)
 }
 
 func TestFencedCodeInsideBlockquotes(t *testing.T) {
@@ -1144,7 +1252,7 @@ okay
 	tests = append(tests, forms[0], want)
 	tests = append(tests, forms[1], want)
 
-	doTestsBlock(t, tests, FencedCode)
+	doTestsBlock(t, tests, EXTENSION_FENCED_CODE)
 }
 
 func TestTable(t *testing.T) {
@@ -1191,7 +1299,7 @@ func TestTable(t *testing.T) {
 		"a|b\\|c|d\n---|---|---\nf|g\\|h|i\n",
 		"<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b|c</th>\n<th>d</th>\n</tr>\n</thead>\n\n<tbody>\n<tr>\n<td>f</td>\n<td>g|h</td>\n<td>i</td>\n</tr>\n</tbody>\n</table>\n",
 	}
-	doTestsBlock(t, tests, Tables)
+	doTestsBlock(t, tests, EXTENSION_TABLES)
 }
 
 func TestUnorderedListWith_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
@@ -1302,7 +1410,7 @@ func TestUnorderedListWith_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
 		"* List\n\n    * sublist\n\n    normal text\n\n    * another sublist\n",
 		"<ul>\n<li><p>List</p>\n\n<ul>\n<li>sublist</li>\n</ul>\n\n<p>normal text</p>\n\n<ul>\n<li>another sublist</li>\n</ul></li>\n</ul>\n",
 	}
-	doTestsBlock(t, tests, NoEmptyLineBeforeBlock)
+	doTestsBlock(t, tests, EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK)
 }
 
 func TestOrderedList_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
@@ -1398,7 +1506,7 @@ func TestOrderedList_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
 		"1. numbers\n1. are ignored\n",
 		"<ol>\n<li>numbers</li>\n<li>are ignored</li>\n</ol>\n",
 	}
-	doTestsBlock(t, tests, NoEmptyLineBeforeBlock)
+	doTestsBlock(t, tests, EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK)
 }
 
 func TestFencedCodeBlock_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
@@ -1472,7 +1580,45 @@ func TestFencedCodeBlock_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
 		"    ``` oz\nleading spaces\n    ```\n",
 		"<pre><code>``` oz\n</code></pre>\n\n<p>leading spaces</p>\n\n<pre><code>```\n</code></pre>\n",
 	}
-	doTestsBlock(t, tests, FencedCode|NoEmptyLineBeforeBlock)
+	doTestsBlock(t, tests, EXTENSION_FENCED_CODE|EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK)
+}
+
+func TestListWithFencedCodeBlock(t *testing.T) {
+	var tests = []string{
+		"1. one\n\n    ```\n    code\n    ```\n\n2. two\n",
+		"<ol>\n<li><p>one</p>\n\n<pre><code>code\n</code></pre></li>\n\n<li><p>two</p></li>\n</ol>\n",
+		// https://github.com/russross/blackfriday/issues/239
+		"1. one\n\n    ```\n    - code\n    ```\n\n2. two\n",
+		"<ol>\n<li><p>one</p>\n\n<pre><code>- code\n</code></pre></li>\n\n<li><p>two</p></li>\n</ol>\n",
+	}
+	doTestsBlock(t, tests, EXTENSION_FENCED_CODE)
+}
+
+func TestListWithMalformedFencedCodeBlock(t *testing.T) {
+	// Ensure that in the case of an unclosed fenced code block in a list,
+	// no source gets ommitted (even if it is malformed).
+	// See russross/blackfriday#372 for context.
+	var tests = []string{
+		"1. one\n\n    ```\n    code\n\n2. two\n",
+		"<ol>\n<li>one\n\n```\ncode\n\n2. two</li>\n</ol>\n",
+
+		"1. one\n\n    ```\n    - code\n\n2. two\n",
+		"<ol>\n<li>one\n\n```\n- code\n\n2. two</li>\n</ol>\n",
+	}
+	doTestsBlock(t, tests, EXTENSION_FENCED_CODE)
+}
+
+func TestListWithFencedCodeBlockNoExtensions(t *testing.T) {
+	// If there is a fenced code block in a list, and FencedCode is not set,
+	// lists should be processed normally.
+	var tests = []string{
+		"1. one\n\n    ```\n    code\n    ```\n\n2. two\n",
+		"<ol>\n<li><p>one</p>\n\n<p><code>\ncode\n</code></p></li>\n\n<li><p>two</p></li>\n</ol>\n",
+
+		"1. one\n\n    ```\n    - code\n    ```\n\n2. two\n",
+		"<ol>\n<li><p>one</p>\n\n<p>```</p>\n\n<ul>\n<li>code\n```</li>\n</ul></li>\n\n<li><p>two</p></li>\n</ol>\n",
+	}
+	doTestsBlock(t, tests, 0)
 }
 
 func TestTitleBlock_EXTENSION_TITLEBLOCK(t *testing.T) {
@@ -1483,10 +1629,10 @@ func TestTitleBlock_EXTENSION_TITLEBLOCK(t *testing.T) {
 		"<h1 class=\"title\">" +
 			"Some title\n" +
 			"Another title line\n" +
-			"Yep, more here too" +
-			"</h1>\n",
+			"Yep, more here too\n" +
+			"</h1>",
 	}
-	doTestsBlock(t, tests, Titleblock)
+	doTestsBlock(t, tests, EXTENSION_TITLEBLOCK)
 }
 
 func TestBlockComments(t *testing.T) {
@@ -1503,159 +1649,56 @@ func TestBlockComments(t *testing.T) {
 	doTestsBlock(t, tests, 0)
 }
 
-func TestTOC(t *testing.T) {
+func TestCDATA(t *testing.T) {
 	var tests = []string{
-		"# Title\n\n##Subtitle1\n\n##Subtitle2",
-		//"<nav>\n<ul>\n<li><a href=\"#toc_0\">Title</a>\n<ul>\n<li><a href=\"#toc_1\">Subtitle1</a></li>\n<li><a href=\"#toc_2\">Subtitle2</a></li>\n</ul></li>\n</ul>\n</nav>\n\n<h1 id=\"toc_0\">Title</h1>\n\n<h2 id=\"toc_1\">Subtitle1</h2>\n\n<h2 id=\"toc_2\">Subtitle2</h2>\n",
-		`<nav>
+		"Some text\n\n<![CDATA[foo]]>\n",
+		"<p>Some text</p>\n\n<![CDATA[foo]]>\n",
 
-<ul>
-<li><a href="#toc_0">Title</a>
-<ul>
-<li><a href="#toc_1">Subtitle1</a></li>
+		"CDATA ]]\n\n<![CDATA[]]]]>\n",
+		"<p>CDATA ]]</p>\n\n<![CDATA[]]]]>\n",
 
-<li><a href="#toc_2">Subtitle2</a></li>
-</ul></li>
-</ul>
+		"CDATA >\n\n<![CDATA[>]]>\n",
+		"<p>CDATA &gt;</p>\n\n<![CDATA[>]]>\n",
 
-</nav>
+		"Lots of text\n\n<![CDATA[lots of te><t\non\nseveral\nlines]]>\n",
+		"<p>Lots of text</p>\n\n<![CDATA[lots of te><t\non\nseveral\nlines]]>\n",
 
-<h1 id="toc_0">Title</h1>
-
-<h2 id="toc_1">Subtitle1</h2>
-
-<h2 id="toc_2">Subtitle2</h2>
-`,
-
-		"# Title\n\n##Subtitle\n\n#Title2",
-		//"<nav>\n<ul>\n<li><a href=\"#toc_0\">Title</a>\n<ul>\n<li><a href=\"#toc_1\">Subtitle</a></li>\n</ul></li>\n<li><a href=\"#toc_2\">Title2</a></li>\n</ul>\n</nav>\n\n<h1 id=\"toc_0\">Title</h1>\n\n<h2 id=\"toc_1\">Subtitle</h2>\n\n<h1 id=\"toc_2\">Title2</h1>\n",
-		`<nav>
-
-<ul>
-<li><a href="#toc_0">Title</a>
-<ul>
-<li><a href="#toc_1">Subtitle</a></li>
-</ul></li>
-
-<li><a href="#toc_2">Title2</a></li>
-</ul>
-
-</nav>
-
-<h1 id="toc_0">Title</h1>
-
-<h2 id="toc_1">Subtitle</h2>
-
-<h1 id="toc_2">Title2</h1>
-`,
-
-		"## Subtitle\n\n# Title",
-		`<nav>
-
-<ul>
-<li>
-<ul>
-<li><a href="#toc_0">Subtitle</a></li>
-</ul></li>
-
-<li><a href="#toc_1">Title</a></li>
-</ul>
-
-</nav>
-
-<h2 id="toc_0">Subtitle</h2>
-
-<h1 id="toc_1">Title</h1>
-`,
-
-		"# Title 1\n\n## Subtitle 1\n\n### Subsubtitle 1\n\n# Title 2\n\n### Subsubtitle 2",
-		`<nav>
-
-<ul>
-<li><a href="#toc_0">Title 1</a>
-<ul>
-<li><a href="#toc_1">Subtitle 1</a>
-<ul>
-<li><a href="#toc_2">Subsubtitle 1</a></li>
-</ul></li>
-</ul></li>
-
-<li><a href="#toc_3">Title 2</a>
-<ul>
-<li>
-<ul>
-<li><a href="#toc_4">Subsubtitle 2</a></li>
-</ul></li>
-</ul></li>
-</ul>
-
-</nav>
-
-<h1 id="toc_0">Title 1</h1>
-
-<h2 id="toc_1">Subtitle 1</h2>
-
-<h3 id="toc_2">Subsubtitle 1</h3>
-
-<h1 id="toc_3">Title 2</h1>
-
-<h3 id="toc_4">Subsubtitle 2</h3>
-`,
-
-		"# Title with `code`",
-		`<nav>
-
-<ul>
-<li><a href="#toc_0">Title with <code>code</code></a></li>
-</ul>
-
-</nav>
-
-<h1 id="toc_0">Title with <code>code</code></h1>
-`,
-
-		// Trigger empty TOC
-		"#",
-		"",
+		"<![CDATA[>]]>\n",
+		"<![CDATA[>]]>\n",
 	}
-	doTestsParam(t, tests, TestParams{
-		HTMLFlags: UseXHTML | TOC,
-	})
-}
+	doTestsBlock(t, tests, 0)
+	doTestsBlock(t, []string{
+		"``` html\n<![CDATA[foo]]>\n```\n",
+		"<pre><code class=\"language-html\">&lt;![CDATA[foo]]&gt;\n</code></pre>\n",
 
-func TestCompletePage(t *testing.T) {
-	var tests = []string{
-		"*foo*",
-		`<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-  <title></title>
-  <meta name="GENERATOR" content="Blackfriday Markdown Processor v2.0" />
-  <meta charset="utf-8" />
-</head>
-<body>
+		"<![CDATA[\n``` python\ndef func():\n    pass\n```\n]]>\n",
+		"<![CDATA[\n``` python\ndef func():\n    pass\n```\n]]>\n",
 
-<p><em>foo</em></p>
-
-</body>
-</html>
+		`<![CDATA[
+> def func():
+>     pass
+]]>
 `,
-	}
-	doTestsParam(t, tests, TestParams{HTMLFlags: UseXHTML | CompletePage})
+		`<![CDATA[
+> def func():
+>     pass
+]]>
+`,
+	}, EXTENSION_FENCED_CODE)
 }
 
 func TestIsFenceLine(t *testing.T) {
 	tests := []struct {
-		data          []byte
-		infoRequested bool
-		wantEnd       int
-		wantMarker    string
-		wantInfo      string
+		data            []byte
+		infoRequested   bool
+		newlineOptional bool
+		wantEnd         int
+		wantMarker      string
+		wantInfo        string
 	}{
 		{
-			data:       []byte("```"),
-			wantEnd:    3,
-			wantMarker: "```",
+			data:    []byte("```"),
+			wantEnd: 0,
 		},
 		{
 			data:       []byte("```\nstuff here\n"),
@@ -1673,31 +1716,41 @@ func TestIsFenceLine(t *testing.T) {
 			wantEnd: 0,
 		},
 		{
-			data:          []byte("```"),
-			infoRequested: true,
-			wantEnd:       3,
-			wantMarker:    "```",
+			data:            []byte("```"),
+			newlineOptional: true,
+			wantEnd:         3,
+			wantMarker:      "```",
 		},
 		{
-			data:          []byte("``` go"),
-			infoRequested: true,
-			wantEnd:       6,
-			wantMarker:    "```",
-			wantInfo:      "go",
+			data:            []byte("```"),
+			infoRequested:   true,
+			newlineOptional: true,
+			wantEnd:         3,
+			wantMarker:      "```",
 		},
 		{
-			data:          []byte("``` go foo bar"),
-			infoRequested: true,
-			wantEnd:       14,
-			wantMarker:    "```",
-			wantInfo:      "go foo bar",
+			data:            []byte("``` go"),
+			infoRequested:   true,
+			newlineOptional: true,
+			wantEnd:         6,
+			wantMarker:      "```",
+			wantInfo:        "go",
 		},
 		{
-			data:          []byte("``` go foo bar  "),
-			infoRequested: true,
-			wantEnd:       16,
-			wantMarker:    "```",
-			wantInfo:      "go foo bar",
+			data:            []byte("``` go foo bar"),
+			infoRequested:   true,
+			newlineOptional: true,
+			wantEnd:         14,
+			wantMarker:      "```",
+			wantInfo:        "go foo bar",
+		},
+		{
+			data:            []byte("``` go foo bar  "),
+			infoRequested:   true,
+			newlineOptional: true,
+			wantEnd:         16,
+			wantMarker:      "```",
+			wantInfo:        "go foo bar",
 		},
 	}
 
@@ -1706,7 +1759,7 @@ func TestIsFenceLine(t *testing.T) {
 		if test.infoRequested {
 			info = new(string)
 		}
-		end, marker := isFenceLine(test.data, info, "```")
+		end, marker := isFenceLine(test.data, info, "```", test.newlineOptional)
 		if got, want := end, test.wantEnd; got != want {
 			t.Errorf("got end %v, want %v", got, want)
 		}
@@ -1715,8 +1768,74 @@ func TestIsFenceLine(t *testing.T) {
 		}
 		if test.infoRequested {
 			if got, want := *info, test.wantInfo; got != want {
-				t.Errorf("got info string %q, want %q", got, want)
+				t.Errorf("got info %q, want %q", got, want)
 			}
+		}
+	}
+}
+
+func TestJoinLines(t *testing.T) {
+	input := `# 标题
+
+第一
+行文字。
+
+第
+二
+行文字。
+`
+	result := `<h1>标题</h1>
+
+<p>第一行文字。</p>
+
+<p>第二行文字。</p>
+`
+	opt := Options{Extensions: commonExtensions | EXTENSION_JOIN_LINES}
+	renderer := HtmlRenderer(commonHtmlFlags, "", "")
+	output := MarkdownOptions([]byte(input), renderer, opt)
+
+	if string(output) != result {
+		t.Error("output dose not match.")
+	}
+}
+
+func TestSanitizedAnchorName(t *testing.T) {
+	tests := []struct {
+		text string
+		want string
+	}{
+		{
+			text: "This is a header",
+			want: "this-is-a-header",
+		},
+		{
+			text: "This is also          a header",
+			want: "this-is-also-a-header",
+		},
+		{
+			text: "main.go",
+			want: "main-go",
+		},
+		{
+			text: "Article 123",
+			want: "article-123",
+		},
+		{
+			text: "<- Let's try this, shall we?",
+			want: "let-s-try-this-shall-we",
+		},
+		{
+			text: "        ",
+			want: "",
+		},
+		{
+			text: "Hello, 世界",
+			want: "hello-世界",
+		},
+	}
+	for _, test := range tests {
+		if got := SanitizedAnchorName(test.text); got != test.want {
+			t.Errorf("SanitizedAnchorName(%q):\ngot %q\nwant %q", test.text, got, test.want)
 		}
 	}
 }

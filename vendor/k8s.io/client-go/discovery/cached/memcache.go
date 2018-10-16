@@ -21,11 +21,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/emicklei/go-restful-swagger12"
 	"github.com/googleapis/gnostic/OpenAPIv2"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/discovery"
@@ -69,20 +67,7 @@ func (d *memCacheClient) ServerResourcesForGroupVersion(groupVersion string) (*m
 
 // ServerResources returns the supported resources for all groups and versions.
 func (d *memCacheClient) ServerResources() ([]*metav1.APIResourceList, error) {
-	apiGroups, err := d.ServerGroups()
-	if err != nil {
-		return nil, err
-	}
-	groupVersions := metav1.ExtractGroupVersions(apiGroups)
-	result := []*metav1.APIResourceList{}
-	for _, groupVersion := range groupVersions {
-		resources, err := d.ServerResourcesForGroupVersion(groupVersion)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, resources)
-	}
-	return result, nil
+	return discovery.ServerResources(d)
 }
 
 func (d *memCacheClient) ServerGroups() (*metav1.APIGroupList, error) {
@@ -98,26 +83,16 @@ func (d *memCacheClient) RESTClient() restclient.Interface {
 	return d.delegate.RESTClient()
 }
 
-// TODO: Should this also be cached? The results seem more likely to be
-// inconsistent with ServerGroups and ServerResources given the requirement to
-// actively Invalidate.
 func (d *memCacheClient) ServerPreferredResources() ([]*metav1.APIResourceList, error) {
-	return d.delegate.ServerPreferredResources()
+	return discovery.ServerPreferredResources(d)
 }
 
-// TODO: Should this also be cached? The results seem more likely to be
-// inconsistent with ServerGroups and ServerResources given the requirement to
-// actively Invalidate.
 func (d *memCacheClient) ServerPreferredNamespacedResources() ([]*metav1.APIResourceList, error) {
-	return d.delegate.ServerPreferredNamespacedResources()
+	return discovery.ServerPreferredNamespacedResources(d)
 }
 
 func (d *memCacheClient) ServerVersion() (*version.Info, error) {
 	return d.delegate.ServerVersion()
-}
-
-func (d *memCacheClient) SwaggerSchema(version schema.GroupVersion) (*swagger.ApiDeclaration, error) {
-	return d.delegate.SwaggerSchema(version)
 }
 
 func (d *memCacheClient) OpenAPISchema() (*openapi_v2.Document, error) {

@@ -43,9 +43,10 @@ reviewers:
 - sttts
 - tallclair
 - thockin
-- timothysc
 - vishh
 - wojtek-t
 - yifan-gu
 - yujuhong
 - zmerlynn
+labels:
+- sig/architecture

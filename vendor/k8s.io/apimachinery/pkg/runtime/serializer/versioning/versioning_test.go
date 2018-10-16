@@ -38,11 +38,8 @@ func (d *testDecodable) GetObjectKind() schema.ObjectKind                { retur
 func (d *testDecodable) SetGroupVersionKind(gvk schema.GroupVersionKind) { d.gvk = gvk }
 func (d *testDecodable) GroupVersionKind() schema.GroupVersionKind       { return d.gvk }
 func (d *testDecodable) DeepCopyObject() runtime.Object {
-	if d == nil {
-		return nil
-	}
-	clone := *d
-	return &clone
+	// no real deepcopy because these tests check for pointer equality
+	return d
 }
 
 type testNestedDecodable struct {
@@ -58,11 +55,8 @@ func (d *testNestedDecodable) GetObjectKind() schema.ObjectKind                {
 func (d *testNestedDecodable) SetGroupVersionKind(gvk schema.GroupVersionKind) { d.gvk = gvk }
 func (d *testNestedDecodable) GroupVersionKind() schema.GroupVersionKind       { return d.gvk }
 func (d *testNestedDecodable) DeepCopyObject() runtime.Object {
-	if d == nil {
-		return nil
-	}
-	clone := *d
-	return &clone
+	// no real deepcopy because these tests check for pointer equality
+	return d
 }
 
 func (d *testNestedDecodable) EncodeNestedObjects(e runtime.Encoder) error {
@@ -78,7 +72,7 @@ func (d *testNestedDecodable) DecodeNestedObjects(_ runtime.Decoder) error {
 func TestNestedDecode(t *testing.T) {
 	n := &testNestedDecodable{nestedErr: fmt.Errorf("unable to decode")}
 	decoder := &mockSerializer{obj: n}
-	codec := NewCodec(nil, decoder, nil, nil, nil, nil, nil, nil, nil)
+	codec := NewCodec(nil, decoder, nil, nil, nil, nil, nil, nil, "TestNestedDecode")
 	if _, _, err := codec.Decode([]byte(`{}`), nil, n); err != n.nestedErr {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -94,10 +88,11 @@ func TestNestedEncode(t *testing.T) {
 	codec := NewCodec(
 		encoder, nil,
 		&checkConvertor{obj: n2, groupVersion: schema.GroupVersion{Group: "other"}},
-		nil, nil,
+		nil,
 		&mockTyper{gvks: []schema.GroupVersionKind{{Kind: "test"}}},
 		nil,
 		schema.GroupVersion{Group: "other"}, nil,
+		"TestNestedEncode",
 	)
 	if err := codec.Encode(n, ioutil.Discard); err != n2.nestedErr {
 		t.Errorf("unexpected error: %v", err)
@@ -118,7 +113,6 @@ func TestDecode(t *testing.T) {
 		serializer runtime.Serializer
 		convertor  runtime.ObjectConvertor
 		creater    runtime.ObjectCreater
-		copier     runtime.ObjectCopier
 		typer      runtime.ObjectTyper
 		defaulter  runtime.ObjectDefaulter
 		yaml       bool
@@ -136,25 +130,25 @@ func TestDecode(t *testing.T) {
 	}{
 		{
 			serializer:  &mockSerializer{actual: gvk1},
-			convertor:   &checkConvertor{groupVersion: schema.GroupVersion{Group: "other", Version: "__internal"}},
+			convertor:   &checkConvertor{groupVersion: schema.GroupVersion{Group: "other", Version: runtime.APIVersionInternal}},
 			expectedGVK: gvk1,
-			decodes:     schema.GroupVersion{Group: "other", Version: "__internal"},
+			decodes:     schema.GroupVersion{Group: "other", Version: runtime.APIVersionInternal},
 		},
 		{
 			serializer:  &mockSerializer{actual: gvk1, obj: decodable1},
-			convertor:   &checkConvertor{in: decodable1, obj: decodable2, groupVersion: schema.GroupVersion{Group: "other", Version: "__internal"}},
+			convertor:   &checkConvertor{in: decodable1, obj: decodable2, groupVersion: schema.GroupVersion{Group: "other", Version: runtime.APIVersionInternal}},
 			expectedGVK: gvk1,
 			sameObject:  decodable2,
-			decodes:     schema.GroupVersion{Group: "other", Version: "__internal"},
+			decodes:     schema.GroupVersion{Group: "other", Version: runtime.APIVersionInternal},
 		},
 		// defaultGVK.Group is allowed to force a conversion to the destination group
 		{
 			serializer:  &mockSerializer{actual: gvk1, obj: decodable1},
 			defaultGVK:  &schema.GroupVersionKind{Group: "force"},
-			convertor:   &checkConvertor{in: decodable1, obj: decodable2, groupVersion: schema.GroupVersion{Group: "force", Version: "__internal"}},
+			convertor:   &checkConvertor{in: decodable1, obj: decodable2, groupVersion: schema.GroupVersion{Group: "force", Version: runtime.APIVersionInternal}},
 			expectedGVK: gvk1,
 			sameObject:  decodable2,
-			decodes:     schema.GroupVersion{Group: "force", Version: "__internal"},
+			decodes:     schema.GroupVersion{Group: "force", Version: runtime.APIVersionInternal},
 		},
 		// uses direct conversion for into when objects differ
 		{
@@ -191,21 +185,10 @@ func TestDecode(t *testing.T) {
 			into: &runtime.VersionedObjects{Objects: []runtime.Object{}},
 
 			serializer:     &mockSerializer{actual: gvk1, obj: decodable1},
-			copier:         &checkCopy{in: decodable1, obj: decodable1},
-			convertor:      &checkConvertor{in: decodable1, obj: decodable2, groupVersion: schema.GroupVersion{Group: "other", Version: "__internal"}},
+			convertor:      &checkConvertor{in: decodable1, obj: decodable2, groupVersion: schema.GroupVersion{Group: "other", Version: runtime.APIVersionInternal}},
 			expectedGVK:    gvk1,
 			expectedObject: &runtime.VersionedObjects{Objects: []runtime.Object{decodable1, decodable2}},
-			decodes:        schema.GroupVersion{Group: "other", Version: "__internal"},
-		},
-		{
-			into: &runtime.VersionedObjects{Objects: []runtime.Object{}},
-
-			serializer:     &mockSerializer{actual: gvk1, obj: decodable1},
-			copier:         &checkCopy{in: decodable1, obj: nil, err: fmt.Errorf("error on copy")},
-			convertor:      &checkConvertor{in: decodable1, obj: decodable2, groupVersion: schema.GroupVersion{Group: "other", Version: "__internal"}},
-			expectedGVK:    gvk1,
-			expectedObject: &runtime.VersionedObjects{Objects: []runtime.Object{decodable1, decodable2}},
-			decodes:        schema.GroupVersion{Group: "other", Version: "__internal"},
+			decodes:        schema.GroupVersion{Group: "other", Version: runtime.APIVersionInternal},
 		},
 
 		// decode into the same version as the serialized object
@@ -223,7 +206,6 @@ func TestDecode(t *testing.T) {
 
 			serializer:     &mockSerializer{actual: gvk1, obj: decodable1},
 			convertor:      &checkConvertor{in: decodable1, obj: decodable1, groupVersion: schema.GroupVersions{{Group: "other", Version: "blah"}}},
-			copier:         &checkCopy{in: decodable1, obj: decodable1, err: nil},
 			expectedGVK:    gvk1,
 			expectedObject: &runtime.VersionedObjects{Objects: []runtime.Object{decodable1}},
 		},
@@ -243,7 +225,6 @@ func TestDecode(t *testing.T) {
 
 			serializer:     &mockSerializer{actual: gvk1, obj: decodable1},
 			convertor:      &checkConvertor{in: decodable1, obj: decodable1, groupVersion: schema.GroupVersions{{Group: "something", Version: "else"}}},
-			copier:         &checkCopy{in: decodable1, obj: decodable1, err: nil},
 			expectedGVK:    gvk1,
 			expectedObject: &runtime.VersionedObjects{Objects: []runtime.Object{decodable1}},
 		},
@@ -251,7 +232,7 @@ func TestDecode(t *testing.T) {
 
 	for i, test := range testCases {
 		t.Logf("%d", i)
-		s := NewCodec(test.serializer, test.serializer, test.convertor, test.creater, test.copier, test.typer, test.defaulter, test.encodes, test.decodes)
+		s := NewCodec(test.serializer, test.serializer, test.convertor, test.creater, test.typer, test.defaulter, test.encodes, test.decodes, fmt.Sprintf("mock-%d", i))
 		obj, gvk, err := s.Decode([]byte(`{}`), test.defaultGVK, test.into)
 
 		if !reflect.DeepEqual(test.expectedGVK, gvk) {
@@ -295,18 +276,6 @@ func TestDecode(t *testing.T) {
 	}
 }
 
-type checkCopy struct {
-	in, obj runtime.Object
-	err     error
-}
-
-func (c *checkCopy) Copy(obj runtime.Object) (runtime.Object, error) {
-	if c.in != nil && c.in != obj {
-		return nil, fmt.Errorf("unexpected input to copy: %#v", obj)
-	}
-	return c.obj, c.err
-}
-
 type checkConvertor struct {
 	err           error
 	in, obj       runtime.Object
@@ -338,7 +307,7 @@ func (c *checkConvertor) ConvertToVersion(in runtime.Object, outVersion runtime.
 	}
 	return c.obj, c.err
 }
-func (c *checkConvertor) ConvertFieldLabel(version, kind, label, value string) (string, string, error) {
+func (c *checkConvertor) ConvertFieldLabel(gvk schema.GroupVersionKind, label, value string) (string, string, error) {
 	return "", "", fmt.Errorf("unexpected call to ConvertFieldLabel")
 }
 

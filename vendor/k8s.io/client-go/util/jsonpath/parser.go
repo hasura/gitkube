@@ -43,7 +43,11 @@ type Parser struct {
 	width int
 }
 
-var ErrSyntax = errors.New("invalid syntax")
+var (
+	ErrSyntax        = errors.New("invalid syntax")
+	dictKeyRex       = regexp.MustCompile(`^'([^']*)'$`)
+	sliceOperatorRex = regexp.MustCompile(`^(-?[\d]*)(:-?[\d]*)?(:[\d]*)?$`)
+)
 
 // Parse parsed the given text and return a node Parser.
 // If an error is encountered, parsing stops and an empty
@@ -90,7 +94,7 @@ func (p *Parser) consumeText() string {
 
 // next returns the next rune in the input.
 func (p *Parser) next() rune {
-	if int(p.pos) >= len(p.input) {
+	if p.pos >= len(p.input) {
 		p.width = 0
 		return eof
 	}
@@ -262,7 +266,7 @@ Loop:
 		}
 	}
 	text := p.consumeText()
-	text = string(text[1 : len(text)-1])
+	text = text[1 : len(text)-1]
 	if text == "*" {
 		text = ":"
 	}
@@ -283,8 +287,7 @@ Loop:
 	}
 
 	// dict key
-	reg := regexp.MustCompile(`^'([^']*)'$`)
-	value := reg.FindStringSubmatch(text)
+	value := dictKeyRex.FindStringSubmatch(text)
 	if value != nil {
 		parser, err := parseAction("arraydict", fmt.Sprintf(".%s", value[1]))
 		if err != nil {
@@ -297,8 +300,7 @@ Loop:
 	}
 
 	//slice operator
-	reg = regexp.MustCompile(`^(-?[\d]*)(:-?[\d]*)?(:[\d]*)?$`)
-	value = reg.FindStringSubmatch(text)
+	value = sliceOperatorRex.FindStringSubmatch(text)
 	if value == nil {
 		return fmt.Errorf("invalid array index %s", text)
 	}
@@ -371,7 +373,7 @@ Loop:
 	}
 	reg := regexp.MustCompile(`^([^!<>=]+)([!<>=]+)(.+?)$`)
 	text := p.consumeText()
-	text = string(text[:len(text)-2])
+	text = text[:len(text)-2]
 	value := reg.FindStringSubmatch(text)
 	if value == nil {
 		parser, err := parseAction("text", text)

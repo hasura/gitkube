@@ -7,13 +7,24 @@ import (
 )
 
 func main() {
-	prompt := promptui.SelectWithAdd{
-		Label:    "What's your text editor",
-		Items:    []string{"Vim", "Emacs", "Sublime", "VSCode", "Atom"},
-		AddLabel: "Other",
-	}
+	items := []string{"Vim", "Emacs", "Sublime", "VSCode", "Atom"}
+	index := -1
+	var result string
+	var err error
 
-	_, result, err := prompt.Run()
+	for index < 0 {
+		prompt := promptui.SelectWithAdd{
+			Label:    "What's your text editor",
+			Items:    items,
+			AddLabel: "Other",
+		}
+
+		index, result, err = prompt.Run()
+
+		if index == -1 {
+			items = append(items, result)
+		}
+	}
 
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
