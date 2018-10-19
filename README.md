@@ -3,7 +3,7 @@
 
 # Gitkube
 
-Gitkube is a tool for building and deploying docker images on Kubernetes using `git push`. 
+Gitkube is a tool for building and deploying Docker images on Kubernetes using `git push`. 
 
 After a simple initial setup, users can simply keep `git push`-ing their repos to build and deploy to Kubernetes automatically.
 
@@ -70,9 +70,9 @@ Gitkube has three components:
 
 1. Remote: Custom resource defined by a K8s CRD
 2. gitkube-controller: Controller that manages Remote objects and propogates changes to gitkubed 
-3. gitkubed: Git host that builds docker image from repo and rolls out deployment
+3. gitkubed: Git host that builds docker image from the repo and rolls out deployment
 
-### High level architecture
+### High-level architecture
 
 ![Architecture](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube-v0.1.png)
 
@@ -121,7 +121,7 @@ spec:
 
 #### Deploying application
 
-Once a Remote is created, it gets a git remote url which you can find in its `status` spec
+Once a Remote is created, it gets a git remote URL which you can find in its `status` spec
 
 ```sh
 $ kubectl get remote sampleremote -o yaml
