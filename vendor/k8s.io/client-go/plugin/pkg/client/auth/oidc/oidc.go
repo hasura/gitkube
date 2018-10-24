@@ -258,7 +258,11 @@ func (p *oidcAuthProvider) idToken() (string, error) {
 
 	idToken, ok := token.Extra("id_token").(string)
 	if !ok {
-		return "", fmt.Errorf("token response did not contain an id_token")
+		// id_token isn't a required part of a refresh token response, so some
+		// providers (Okta) don't return this value.
+		//
+		// See https://github.com/kubernetes/kubernetes/issues/36847
+		return "", fmt.Errorf("token response did not contain an id_token, either the scope \"openid\" wasn't requested upon login, or the provider doesn't support id_tokens as part of the refresh response.")
 	}
 
 	// Create a new config to persist.
@@ -275,7 +279,7 @@ func (p *oidcAuthProvider) idToken() (string, error) {
 
 	// Persist new config and if successful, update the in memory config.
 	if err = p.persister.Persist(newCfg); err != nil {
-		return "", fmt.Errorf("could not perist new tokens: %v", err)
+		return "", fmt.Errorf("could not persist new tokens: %v", err)
 	}
 	p.cfg = newCfg
 

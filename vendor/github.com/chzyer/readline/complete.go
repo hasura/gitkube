@@ -221,7 +221,7 @@ func (o *opCompleter) CompleteRefresh() {
 		}
 		buf.WriteString(string(same))
 		buf.WriteString(string(c))
-		buf.Write(bytes.Repeat([]byte(" "), colWidth-len(c)-len(same)))
+		buf.Write(bytes.Repeat([]byte(" "), colWidth-runes.WidthAll(c)-runes.WidthAll(same)))
 
 		if inSelect {
 			buf.WriteString("\033[0m")

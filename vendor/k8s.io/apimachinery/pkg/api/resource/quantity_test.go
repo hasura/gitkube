@@ -24,12 +24,9 @@ import (
 	"unicode"
 
 	fuzz "github.com/google/gofuzz"
-	"github.com/spf13/pflag"
 
 	inf "gopkg.in/inf.v0"
 )
-
-var useInfDec bool
 
 func amount(i int64, exponent int) infDecAmount {
 	// See the below test-- scale is the negative of an exponent.
@@ -79,7 +76,7 @@ func TestQuantityParseZero(t *testing.T) {
 	}
 }
 
-// TestQuantityParseNonNumericError ensures that when a non-numeric string is parsed
+// TestQuantityParseNonNumericPanic ensures that when a non-numeric string is parsed
 // it panics
 func TestQuantityParseNonNumericPanic(t *testing.T) {
 	defer func() {
@@ -140,7 +137,7 @@ func TestQuantitySubZeroPreservesSuffix(t *testing.T) {
 	}
 }
 
-// Verifies that you get 0 as canonical value if internal value is 0, and not 0<suffix>
+// TestQuantityCanocicalizeZero verifies that you get 0 as canonical value if internal value is 0, and not 0<suffix>
 func TestQuantityCanocicalizeZero(t *testing.T) {
 	val := MustParse("1000m")
 	val.i.Sub(int64Amount{value: 1})
@@ -1058,21 +1055,6 @@ func TestCopy(t *testing.T) {
 	c.Set(6)
 	if q.Value() == 6 {
 		t.Errorf("Copy didn't")
-	}
-}
-
-func TestQFlagSet(t *testing.T) {
-	qf := qFlag{&Quantity{}}
-	qf.Set("1Ki")
-	if e, a := "1Ki", qf.String(); e != a {
-		t.Errorf("Unexpected result %v != %v", e, a)
-	}
-}
-
-func TestQFlagIsPFlag(t *testing.T) {
-	var pfv pflag.Value = qFlag{}
-	if e, a := "quantity", pfv.Type(); e != a {
-		t.Errorf("Unexpected result %v != %v", e, a)
 	}
 }
 

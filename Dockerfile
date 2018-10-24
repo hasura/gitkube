@@ -1,4 +1,4 @@
-FROM golang:1.8.5-alpine as builder
+FROM golang:1.11.1-alpine as builder
 
 # setup the working directory
 WORKDIR /go/src/github.com/hasura/gitkube

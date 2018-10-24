@@ -1,0 +1,25 @@
+# Adding the generators here allows us to vendor the code-generator package
+# This is required since code-generator is not directly or transitively
+# dependant
+required = [
+  "k8s.io/code-generator/cmd/deepcopy-gen",
+  "k8s.io/code-generator/cmd/client-gen",
+  "k8s.io/code-generator/cmd/lister-gen",
+  "k8s.io/code-generator/cmd/informer-gen"
+  ]
+
+[[constraint]]
+  name = "k8s.io/api"
+  version = "kubernetes-1.12.0"
+
+[[constraint]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.12.0"
+
+[[constraint]]
+  name = "k8s.io/apiextensions-apiserver"
+  version = "kubernetes-1.12.0"
+
+[[constraint]]
+  name = "k8s.io/client-go"
+  version = "9.0.0"

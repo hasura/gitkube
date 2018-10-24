@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Google Inc. All Rights Reserved.
+Copyright 2016 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import (
 
 func ExampleNewServer() {
 
-	srv, err := bttest.NewServer("127.0.0.1:0")
+	srv, err := bttest.NewServer("localhost:0")
 
 	if err != nil {
 		log.Fatalln(err)
