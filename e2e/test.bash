@@ -97,26 +97,25 @@ clone_test_repo() {
 }
 
 # create test deployment
-create_test_deployment() {
+create_test_manifests() {
     create_test_namespace
     clone_test_repo
     log "creating test deployment"
-    cat "$TEMP_REPO_DIR/k8s.yaml" | sed -e "s/$TEST_NAMESPACE_STRING/namespace: $TEST_NAMESPACE/" | kctl create -f -
-    log "waiting for test deployment to start running"
-    kctl --namespace "$TEST_NAMESPACE" rollout status deployment/nginx
+    sed -i -e "s/$TEST_NAMESPACE_STRING/namespace: $TEST_NAMESPACE/" "$TEMP_REPO_DIR/mono-repo/manifests/"*
+    git -C "$TEMP_REPO_DIR" commit -am "change to test namespace"
 }
 
 # add ssh key to remote config
 add_ssh_key() {
     log "adding ssh key to remote file"
-    try cat ~/.ssh/id_rsa.pub | awk '$0="  - "$0' >> "$TEMP_REPO_DIR/remote.yaml"
+    try cat ~/.ssh/id_rsa.pub | awk '$0="  - "$0' >> "$TEMP_REPO_DIR/mono-repo/remote.yaml"
 }
 
 # create remote object on the cluster
 create_remote() {
     add_ssh_key
     log "creating gitkube remote object"
-    cat "$TEMP_REPO_DIR/remote.yaml" | sed -e "s/$TEST_NAMESPACE_STRING/namespace: $TEST_NAMESPACE/" | kctl create -f -
+    cat "$TEMP_REPO_DIR/mono-repo/remote.yaml" | sed -e "s/$TEST_NAMESPACE_STRING/namespace: $TEST_NAMESPACE/" | kctl create -f -
 }
 
 # get remote url from the object
@@ -162,7 +161,7 @@ run_basic_test() {
     ensure_dependencies
         set_kubeconfig
         install_gitkube
-        create_test_deployment
+        create_test_manifests
         create_remote
         setup_local_remote
         git_push
