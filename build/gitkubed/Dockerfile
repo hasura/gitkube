@@ -4,10 +4,10 @@ MAINTAINER tiru@hasura.io
 # Install openssh server
 RUN apt-get update \
  && apt-get install -y upx-ucl binutils curl openssh-server git jq \
- && curl -o /tmp/docker-17.05 'https://download.docker.com/linux/static/stable/x86_64/docker-17.06.0-ce.tgz' \
- && tar -xf /tmp/docker-17.05 -C /tmp \
+ && curl -o /tmp/docker-18.06 'https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz' \
+ && tar -xf /tmp/docker-18.06 -C /tmp \
  && mv /tmp/docker/docker /bin/docker \
- && rm -rf /tmp/docker-17.05 /tmp/docker \
+ && rm -rf /tmp/docker-18.06 /tmp/docker \
  && strip --strip-unneeded /bin/docker \
  && chmod a+x /bin/docker \
  && upx /bin/docker \
