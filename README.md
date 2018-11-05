@@ -160,15 +160,15 @@ Contributions are welcome.
 
 - Join the [Gitkube channel](https://kubernetes.slack.com/messages/CA68R8ZBN/) in the Kubernetes Slack group
 
-- <a href="https://twitter.com/intent/follow?screen_name=gitkube"><img src="https://img.shields.io/twitter/follow/gitkube.svg?style=social&logo=twitter" alt="follow on Twitter"></a>
+- [](https://img.shields.io/twitter/follow/gitkube.svg?style=social&logo=twitter)
 
 - Subscribe to the [Gitkube mailing list](http://eepurl.com/dsxoH9)
 
 ## Maintainers
 
 This project has come out of the work at [hasura.io](https://hasura.io). 
-Current maintainers [@Tirumarai](https://twitter.com/Tirumarai), [@shahidh_k](https://twitter.com/shahidh_k). 
+Current maintainers [Tirumarai](https://twitter.com/Tirumarai), [shahidh_k](https://twitter.com/shahidh_k). 
 
-Follow [@gitkube](https://twitter.com/gitkube) to stay updated.
+Follow [gitkube](https://twitter.com/gitkube) to stay updated.
 
 Gitkube logo concept and design by [Samudra Gupta](https://www.linkedin.com/in/samudra-gupta-b6a3a238/). 
