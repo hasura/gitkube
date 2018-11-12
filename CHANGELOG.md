@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0
+
+- Update client-go to v9.0
+- Update docker cli to 18.06
+
 ## v0.2.0
 
 - Introduces gitkube CLI

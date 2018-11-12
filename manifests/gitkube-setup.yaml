@@ -62,7 +62,7 @@ spec:
       - command:
         - bash
         - /sshd-lib/start_sshd.sh
-        image: hasura/gitkubed:v0.2.1
+        image: hasura/gitkubed:v0.3.0
         imagePullPolicy: IfNotPresent
         name: sshd
         ports:
@@ -122,7 +122,7 @@ spec:
     spec:
       serviceAccountName: gitkube
       containers:
-      - image: hasura/gitkube-controller:v0.2.1
+      - image: hasura/gitkube-controller:v0.3.0
         imagePullPolicy: IfNotPresent
         name: controller
         resources:
