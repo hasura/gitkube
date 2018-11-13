@@ -96,4 +96,8 @@ spec:
 
 You must create a repository with the name `default-dev-default.www-www` in your registry. 
 
-Note 2: The docker authentication credentials for ECR last only for 12 hours. You must ensure to renew the credentials by running Step 1) repeatedly and updating the docker-registry secret created in Step 2). This can be automated by running a CronJob as described in this [blog post](https://medium.com/@xynova/keeping-aws-registry-pull-credentials-fresh-in-kubernetes-2d123f581ca6).
+Note 2: The docker authentication credentials for ECR last only for 12 hours. You must ensure to renew the credentials by running
+
+Step 1: repeatedly and updating the docker-registry secret created in 
+
+Step 2: This can be automated by running a CronJob as described in this [blog post](https://medium.com/@xynova/keeping-aws-registry-pull-credentials-fresh-in-kubernetes-2d123f581ca6).
