@@ -45,7 +45,11 @@ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer -
    ``` bash
    curl https://raw.githubusercontent.com/hasura/gitkube/master/gimme.sh | bash
    ```
-   - Windows: download the latest [release](https://github.com/hasura/gitkube/releases) and add it to your `PATH`.
+   - Windows (using [scoop](https://scoop.sh))
+   ```bat
+   scoop gitkube
+   ```
+   Or download the latest [release](https://github.com/hasura/gitkube/releases) and add it to your `PATH`.
 
 2. Use Gitkube CLI to install Gitkube on the cluster:
    ```bash
