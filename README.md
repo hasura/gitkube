@@ -47,7 +47,7 @@ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer -
    ```
    - Windows (using [scoop](https://scoop.sh))
    ```bat
-   scoop gitkube
+   scoop install gitkube
    ```
    Or download the latest [release](https://github.com/hasura/gitkube/releases) and add it to your `PATH`.
 
