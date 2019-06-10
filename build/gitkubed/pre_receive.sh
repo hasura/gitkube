@@ -30,8 +30,9 @@
 
 
 # When receiving a new git push, the received branch gets compared to this one.
-# If you do not need this, just add a comment
-export DEPLOY_ALLOWED_BRANCH="master"
+# If you do not need this, set *(wildcard)
+
+: ${DEPLOY_ALLOWED_BRANCH:="master"}
 
 # Repo Name:
 export DEPLOY_REPO_NAME=$(basename "$PWD")
@@ -67,7 +68,7 @@ do
     export DEPLOY_NEWREV="$newrev"
     export DEPLOY_REFNAME="$refname"
 
-    if [ ! -z "${DEPLOY_ALLOWED_BRANCH}" ]; then
+    if [ ! -z "${DEPLOY_ALLOWED_BRANCH}" -a "${DEPLOY_ALLOWED_BRANCH}" != "*" ]; then
         if [ "${DEPLOY_ALLOWED_BRANCH}" != "$DEPLOY_BRANCH" ]; then
             echo "Ignoring branch '$DEPLOY_BRANCH' of '${DEPLOY_REPO_NAME}'."
             echo "Deployment(s) will not be updated"
