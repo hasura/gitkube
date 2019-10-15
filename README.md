@@ -11,7 +11,7 @@ After a simple initial setup, users can simply keep `git push`-ing their repos t
 
 ![Gitkube](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube.gif)
 
-## When should I use gitkube?
+## When should I use Gitkube?
 1. Ideal for development where you can push your WIP branch to the cluster to test.
 2. Reference implementation for writing git-based automation on your server. Fork this repo and create your own CRD + controller + git remote hook that can do things on the Kubernetes cluster.
 
@@ -27,7 +27,7 @@ After a simple initial setup, users can simply keep `git push`-ing their repos t
 
 Gitkube will run on any Kubernetes vendor/distribution AS IS. In case you find any difficulties in the setup, please comment on [#33](https://github.com/hasura/gitkube/issues/33) 
 
-#### Install gitkube
+#### Install Gitkube
 
 ##### Using kubectl
 
@@ -38,7 +38,7 @@ kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.ya
 kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
 
-##### Using gitkube CLI 
+##### Using Gitkube CLI 
 
 1. Install Gitkube CLI:
    - Linux/MacOS
