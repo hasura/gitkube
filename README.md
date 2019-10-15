@@ -3,7 +3,7 @@
 
 # Gitkube
 
-Gitkube is a tool for building and deploying Docker images on Kubernetes using `git push`. 
+**Gitkube is a tool for building and deploying Docker images on Kubernetes using `git push`.**
 
 After a simple initial setup, users can simply keep `git push`-ing their repos to build and deploy to Kubernetes automatically.
 
