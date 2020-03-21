@@ -38,7 +38,7 @@ metadata:
   name: gitkube-ci-conf
   namespace: kube-system
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -46,6 +46,9 @@ metadata:
   name: gitkubed
   namespace: kube-system
 spec:
+  selector:
+    matchLabels:
+      app: gitkubed
   replicas: 1
   strategy:
     rollingUpdate:
@@ -101,7 +104,7 @@ spec:
           name: gitkube-ci-conf
         name: gitkube-ci-conf
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -109,6 +112,9 @@ metadata:
   name: gitkube-controller
   namespace: kube-system
 spec:
+  selector:
+    matchLabels:
+      app: gitkube-controller
   replicas: 1
   strategy:
     rollingUpdate:
@@ -134,5 +140,3 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-     
-
