@@ -4,14 +4,14 @@ MAINTAINER tiru@hasura.io
 # Install openssh server
 RUN apt-get update \
  && apt-get install -y upx-ucl binutils curl openssh-server git jq \
- && curl -o /tmp/docker-18.06 'https://download.docker.com/linux/static/stable/x86_64/docker-18.06.1-ce.tgz' \
- && tar -xf /tmp/docker-18.06 -C /tmp \
+ && curl -o /tmp/docker-19.03 'https://download.docker.com/linux/static/stable/x86_64/docker-19.03.8.tgz' \
+ && tar -xf /tmp/docker-19.03 -C /tmp \
  && mv /tmp/docker/docker /bin/docker \
- && rm -rf /tmp/docker-18.06 /tmp/docker \
+ && rm -rf /tmp/docker-19.03 /tmp/docker \
  && strip --strip-unneeded /bin/docker \
  && chmod a+x /bin/docker \
  && upx /bin/docker \
- && curl -o /bin/kubectl 'https://storage.googleapis.com/kubernetes-release/release/v1.8.7/bin/linux/amd64/kubectl' \
+ && curl -o /bin/kubectl 'https://storage.googleapis.com/kubernetes-release/release/v1.17.4/bin/linux/amd64/kubectl' \
  && strip --strip-unneeded /bin/kubectl \
  && chmod a+x /bin/kubectl \
  && upx /bin/kubectl \
