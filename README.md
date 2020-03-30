@@ -32,13 +32,13 @@ Gitkube will run on any Kubernetes vendor/distribution AS IS. In case you find a
 ##### Using kubectl
 
 ```sh
-kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.yaml
+kubectl create -f https://raw.githubusercontent.com/hasura/gitkube/master/manifests/gitkube-setup.yaml
 
 #expose gitkubed service
 kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
 
-##### Using gitkube CLI 
+##### Using gitkube CLI (DEPRECATED)
 
 1. Install Gitkube CLI:
    - Linux/MacOS
@@ -55,14 +55,6 @@ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer -
    ```bash
    gitkube install
    ```
-
-#### Provider walkthroughs
-
-The above installation steps work on most Kubernetes clusters. Detailed walkthroughs for few specific providers are also available:
-
-| Provider        | Link          |
-|-----------------|---------------|
-| minikube        |[minikube](docs/minikube.md) |
 
 #### Example
 Follow this [example](https://github.com/hasura/gitkube-example) repo for a typical workflow of gitkube.
