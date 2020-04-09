@@ -1,4 +1,5 @@
-![Gitkube Logo](artifacts/gitkube-h-w.png)
+
+![Gitkube Logo](assets/images/gitkube-h-w.png)
 
 # Gitkube
 
