@@ -1,16 +1,14 @@
-![Gitkube Logo](assets/images/gitkube-h-w.png)
+![Gitkube Logo](artifacts/gitkube-h-w.png)
 
 # Gitkube
 
-Gitkube is a tool for building and deploying docker images on Kubernetes using `git push`. 
+Gitkube is a tool for building and deploying Docker images on Kubernetes using `git push`. 
 
 After a simple initial setup, users can simply keep `git push`-ing their repos to build and deploy to Kubernetes automatically.
 
-[![GoDoc](https://godoc.org/github.com/hasura/gitkube?status.svg)](https://godoc.org/github.com/hasura/gitkube)
+[![GoDoc](https://godoc.org/github.com/hasura/gitkube?status.svg)](https://godoc.org/github.com/hasura/gitkube) 
 
 ![Gitkube](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube.gif)
-
-gitkube.sh is a young project; don't forget to [star the repo](https://github.com/hasura/gitkube) to show ❤️ and to keep up!
 
 ## When should I use gitkube?
 1. Ideal for development where you can push your WIP branch to the cluster to test.
@@ -30,37 +28,42 @@ Gitkube will run on any Kubernetes vendor/distribution AS IS. In case you find a
 
 #### Install gitkube
 
+##### Using kubectl
+
 ```sh
-$ kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.yaml
+kubectl create -f https://raw.githubusercontent.com/hasura/gitkube/master/manifests/gitkube-setup.yaml
 
-$ #expose gitkubed service
-$ kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
+#expose gitkubed service
+kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
 ```
-#### Example
-Follow this [example](https://github.com/hasura/gitkube-example) repo for a typical workflow of gitkube.
 
+##### Using gitkube CLI (DEPRECATED)
 
-## How it works
+1. Install Gitkube CLI:
+   - Linux/MacOS
+   ``` bash
+   curl https://raw.githubusercontent.com/hasura/gitkube/master/gimme.sh | bash
+   ```
+   - Windows (using [scoop](https://scoop.sh))
+   ```bat
+   scoop install gitkube
+   ```
+   Or download the latest [release](https://github.com/hasura/gitkube/releases) and add it to your `PATH`.
 
-Gitkube has three components:
+2. Use Gitkube CLI to install Gitkube on the cluster:
+   ```bash
+   gitkube install
+   ```
 
-1. Remote: Custom resource defined by a K8s CRD
-2. gitkube-controller: Controller that manages Remote objects and propogates changes to gitkubed 
-3. gitkubed: Git host that builds docker image from repo and rolls out deployment
-
-### High level architecture
-
-![Architecture](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube-v0.1.png)
-
-### Workflow
+## Workflow
 - Local dev: User creates a base git repo for the application with Dockerfile and K8s deployment
-- Setting Remote: User defined the spec for Remote containing the rules for `git push` 
+- Setting Remote: User defines a spec for Remote containing the rules for `git push` 
 - Deploying application: Once a Remote is setup, application can be deployed to K8s using `git push <remote> master`
 
-#### Local dev
+### Local dev
 User should have a git repo with source code and a Dockerfile. User should also create a base K8s deployment for the application.
 
-#### Setting Remote
+### Setting Remote
 A Remote resource consists of 3 parts:
 
 1. authorizedKeys: List of ssh-keys for authorizing `git push`.
@@ -80,27 +83,24 @@ spec:
   authorizedKeys:
   - "ssh-rsa your-ssh-public-key"
 
-# Provide registry details for pushing and pulling image from/into the cluster 
+# Provide registry details: https://github.com/hasura/gitkube/blob/master/docs/registry.md
   registry:
-    url: "registry.io/user"
+    url: "docker.io/user"
     credentials:
-    # dockercfg secret
-      secretKeyRef:
-        name: regsecret
-        key: .dockercfg
+      secretRef: regsecret                # Name of docker-registry secret
 
 # Define deployment rules
   deployments:
   - name: www                             # Name of K8s deployment which is updated on git push
     containers: 
     - name: www                           # Name of container in the deployment which is built during git push
-      path: example/www                   # Location of source code in the git repo
+      path: example/www                   # Docker build context path in the git repo
       dockerfile: example/www/Dockerfile  # Location of Dockerfile for the source code
 ```
 
-#### Deploying application
+### Deploying application
 
-Once a Remote is created, it gets a git remote url which you can find in its `status` spec
+Once a Remote is created, it gets a git remote URL which you can find in its `status` spec
 
 ```sh
 $ kubectl get remote sampleremote -o yaml
@@ -122,12 +122,21 @@ And finally, `git push`
 $ git push sampleremote master
 ```
 
-## Roadmap
+### More examples
+Follow this [example](https://github.com/hasura/gitkube-example) repo for more workflows with gitkube.
 
-Gitkube is open to evolution. Some of the features to be added in future include:  
+## How it works
 
-- Allowing all apps (daemonset, statefulset) to be deployed using `git push`. Current support is limited to deployments. [#19](https://github.com/hasura/gitkube/issues/19)
-- Allowing different git hooks to be integrated [#20](https://github.com/hasura/gitkube/issues/20)
+Gitkube has three components:
+
+1. Remote: Custom resource defined by a K8s CRD
+2. gitkube-controller: Controller that manages Remote objects and propogates changes to gitkubed 
+3. gitkubed: Git host that builds docker image from the repo and rolls out deployment
+
+### High-level architecture
+
+![Architecture](https://raw.githubusercontent.com/hasura/gitkube/master/artifacts/gitkube-v0.1.png)
+
 
 ## Contributing
 
@@ -146,5 +155,6 @@ Contributions are welcome.
 This project has come out of the work at [hasura.io](https://hasura.io). 
 Current maintainers [@Tirumarai](https://twitter.com/Tirumarai), [@shahidh_k](https://twitter.com/shahidh_k). 
 
-Gitkube logo concept and design by [Samudra Gupta](https://www.linkedin.com/in/samudra-gupta-b6a3a238/).
+Follow [@gitkube](https://twitter.com/gitkube) to stay updated.
 
+Gitkube logo concept and design by [Samudra Gupta](https://www.linkedin.com/in/samudra-gupta-b6a3a238/). 
