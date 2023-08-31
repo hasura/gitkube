@@ -131,7 +131,7 @@ Follow this [example](https://github.com/hasura/gitkube-example) repo for more w
 Gitkube has three components:
 
 1. Remote: Custom resource defined by a K8s CRD
-2. gitkube-controller: Controller that manages Remote objects and propogates changes to gitkubed 
+2. gitkube-controller: Controller that manages Remote objects and propagates changes to gitkubed 
 3. gitkubed: Git host that builds docker image from the repo and rolls out deployment
 
 ### High-level architecture
